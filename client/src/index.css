@@ -12,15 +12,46 @@ body {
   text-align: center;
 }
 
+h2 {
+  margin-top: 75px;
+}
+
 .event-list {
   list-style: none;
   padding: 0;
   margin-top: 20px;
 }
 
+.rsvp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 260px;
+  margin: auto;
+}
+
+.rsvp-form button {
+  width: 50%;
+  margin: auto;
+}
+
+.gallery {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+}
+
+.gallery-img {
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px;
+  flex-shrink: 0;
+}
+
 .loading {
   margin-top: 100px;
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
   color: #dfdcda;
 }

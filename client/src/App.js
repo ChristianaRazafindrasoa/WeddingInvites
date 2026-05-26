@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./index.css";
 
 function App() {
+  const photos = ["/images/photo1.jpg","/images/photo2.jpg","/images/photo3.jpg"];
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
@@ -26,7 +27,7 @@ function App() {
       })
     })
     .then(res => {
-      if (!res.ok) throw new Error("RSVP failed");
+      if (!res.ok) throw new Error();
       return res.json();
     })
     .then(() => setSubmitted(true))
@@ -55,14 +56,15 @@ function App() {
                 hour: "2-digit",
                 minute: "2-digit"
               })}
-            </div><br></br>
+            </div>
+            <br></br>
           </li>
         ))}
       </ul>
 
       <h2>RSVP</h2>
       {submitted ? (<p>Thank you for attending.</p>) : (
-        <div>
+        <div className="rsvp-form">
           <input
             placeholder="e.g. John Doe"
             value={mainGuest}
@@ -73,11 +75,20 @@ function App() {
             value={plusOne}
             onChange={(e) => setPlusOne(e.target.value)}
           />
-          <br/><br/>
           <button onClick={submitRSVP}>Submit</button>
           {failed && <p>RSVP failed. Please try again later.</p>}
         </div>
       )}
+
+      <h2>Gallery</h2>
+      <div className="gallery-section">
+        <p>Find and upload your photos here after the wedding.</p>
+        <div className="gallery">
+          {photos.map((photo, index) => (
+            <img src={photo} alt={`${index + 1}`} className="gallery-img"/>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
