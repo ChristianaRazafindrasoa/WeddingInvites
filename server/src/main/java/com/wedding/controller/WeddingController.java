@@ -13,7 +13,7 @@ import com.wedding.model.WeddingEvent;
 import com.wedding.model.WeddingInfo;
 
 @RestController
-@RequestMapping("api/wedding")
+@RequestMapping("api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class WeddingController {
 
