@@ -1,5 +1,4 @@
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
   background: #000000;
   color: #dfdcda;
@@ -13,7 +12,7 @@ body {
 }
 
 h2 {
-  margin-top: 75px;
+  margin-top: 90px;
 }
 
 .event-list {
@@ -26,12 +25,23 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-width: 260px;
+  max-width: 200px;
   margin: auto;
 }
 
+.rsvp-form input {
+  font-family: Arial, sans-serif;
+  font-size: small;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
 .rsvp-form button {
-  width: 50%;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  cursor: pointer;
   margin: auto;
 }
 
@@ -47,6 +57,33 @@ h2 {
   object-fit: cover;
   border-radius: 15px;
   flex-shrink: 0;
+}
+
+.registry button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.payment-options {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.payment-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.payment-card img {
+  width: 180px;
+  height: 170px;
+  border-radius: 16px;
 }
 
 .loading {

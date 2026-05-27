@@ -6,6 +6,7 @@ function App() {
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
+  const [showPayments, setShowPayments] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -48,6 +49,7 @@ function App() {
       <ul className="event-list">
         {wedding.events.map((event, index) => (
           <li key={index}>
+            <br></br>
             <strong>{event.name}</strong>
             <div>{event.location}</div>
             <div>{event.address}</div>
@@ -57,7 +59,6 @@ function App() {
                 minute: "2-digit"
               })}
             </div>
-            <br></br>
           </li>
         ))}
       </ul>
@@ -76,18 +77,43 @@ function App() {
             onChange={(e) => setPlusOne(e.target.value)}
           />
           <button onClick={submitRSVP}>Submit</button>
-          {failed && <p>RSVP failed. Please try again later.</p>}
+          {failed && <p>RSVP failed.<br></br>Please try again later.</p>}
         </div>
       )}
 
       <h2>Gallery</h2>
       <div className="gallery-section">
-        <p>Find and upload your photos here after the wedding.</p>
+        <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
           {photos.map((photo, index) => (
             <img src={photo} alt={`${index + 1}`} className="gallery-img"/>
           ))}
         </div>
+      </div>
+
+      <h2>Registry</h2>
+      <div className="registry">
+        <p>
+          Your presence is the greatest gift, <br></br>
+          but if you'd like to contribute to our honeymoon fund, <br></br>
+          you can do so below.
+        </p>
+        <button onClick={() => setShowPayments(!showPayments)}>Contribute</button>
+        {showPayments && (
+          <div>
+            <div className="payment-options">
+            <div className="payment-card">
+              <img src="/images/venmo.jpg" alt="Venmo QR" />
+              <p>Nick</p>
+            </div>
+            <div className="payment-card">
+              <img src="/images/zelle.jpg" alt="Zelle QR" />
+              <p>Christiana</p>
+            </div>
+          </div>
+          <p>Thank you in advance for contributing.</p>
+        </div>    
+        )}
       </div>
     </div>
   );
