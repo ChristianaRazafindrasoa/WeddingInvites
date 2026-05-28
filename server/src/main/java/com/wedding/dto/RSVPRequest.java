@@ -1,4 +1,4 @@
 package com.wedding.dto;
 
-public record RSVPRequest(String mainGuestName, String plusOneName) {
+public record RSVPRequest(String mainGuestName, String plusOneName, boolean isAccepted) {
 }

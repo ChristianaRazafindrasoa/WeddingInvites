@@ -15,8 +15,8 @@ CREATE TABLE guest (
     wedding_id INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     phone VARCHAR(255),
-    hasPlusOne BOOLEAN,
-    isAttending BOOLEAN DEFAULT FALSE,
+    has_plus_one BOOLEAN,
+    is_attending BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (wedding_id)
         REFERENCES wedding_info(wedding_id)
 );
@@ -26,7 +26,8 @@ CREATE TABLE rsvp (
     wedding_id INT NOT NULL,
     main_guest_id INT NOT NULL,
     plus_one_id INT,
-    respondedAt DATETIME,
+    responded_at DATETIME,
+    is_accepted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (wedding_id)
         REFERENCES wedding_info(wedding_id),
 	FOREIGN KEY (main_guest_id)
@@ -38,11 +39,11 @@ CREATE TABLE rsvp (
 INSERT INTO wedding_info (groom_name, bride_name, city, `date`) VALUES
 	('Nicholas', 'Christiana', 'Tampa, Florida', '2026-12-12');
     
-INSERT INTO guest (wedding_id, `name`, phone, hasPlusOne, isAttending) VALUES
+INSERT INTO guest (wedding_id, `name`, phone, has_plus_one, is_attending) VALUES
 	(1, 'Foo Test', '1234567890', true, false),
     (1, 'Bar Test', null, false, false),
     (1, 'Test McTest', '9876543210', false, false);
     
-INSERT INTO rsvp (wedding_id, main_guest_id, plus_one_id, respondedAt) VALUES
-	(1, 1, 2, null),
-    (1, 3, null, null);   
+INSERT INTO rsvp (wedding_id, main_guest_id, plus_one_id, responded_at, is_accepted) VALUES
+	(1, 1, 2, null, false),
+    (1, 3, null, null, false);   

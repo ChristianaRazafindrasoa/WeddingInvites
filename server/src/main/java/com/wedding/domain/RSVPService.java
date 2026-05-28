@@ -22,6 +22,7 @@ public class RSVPService {
     }
 
     public RSVPResponse submit(RSVPRequest request) {
+        boolean attending = request.isAccepted();
         Guest mainGuest = guestRepo
                 .findByFullName(request.mainGuestName())
                 .orElseThrow(() ->
@@ -39,21 +40,21 @@ public class RSVPService {
                     .findByFullName(request.plusOneName())
                     .orElseThrow(() ->
                             new RuntimeException("Plus one not found"));
-            plusOne.setAttending();
+            plusOne.setAttending(attending);
             plusOne = guestRepo.save(plusOne);
         }
 
-        mainGuest.setAttending();
+        mainGuest.setAttending(attending);
         mainGuest = guestRepo.save(mainGuest);
 
         rsvp.setRespondedAt(LocalDateTime.now());
+        rsvp.setAccepted(attending);
+        
         RSVP saved = rsvpRepo.save(rsvp);
         return new RSVPResponse(
                 saved.getMainGuest().getFullName(),
-                saved.getPlusOne() != null
-                        ? saved.getPlusOne().getFullName()
-                        : null,
-                "Thank you for attending."
+                saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
+                attending ? "Thank you for attending." : "Thank you, we'll miss you."
         );
     }
 }

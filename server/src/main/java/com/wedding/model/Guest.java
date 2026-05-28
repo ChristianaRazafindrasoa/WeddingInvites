@@ -53,11 +53,7 @@ public class Guest {
         return isAttending;
     }
 
-    public void setAttending() {
-        isAttending = true;
-    }
-
-    public void undoAttending() {
-        isAttending = false;
+    public void setAttending(boolean isAttending) {
+        this.isAttending = isAttending;
     }
 }

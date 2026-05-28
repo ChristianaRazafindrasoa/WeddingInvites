@@ -15,7 +15,7 @@ function App() {
       .then(data => setWedding(data));
   }, []);
 
-  const submitRSVP = async () => {
+  const submitRSVP = async (attending) => {
     try {
       const response = await fetch("http://localhost:8080/api/rsvp", {
         method: "POST",
@@ -25,11 +25,12 @@ function App() {
         body: JSON.stringify({
           mainGuestName: mainGuest,
           plusOneName: plusOne,
+          isAccepted: attending
         }),
       });
       setResponse(await response.json());
     } catch (err) { 
-        setResponse({message: "RSVP failed. Please try again later.",});
+      setResponse({message: "RSVP failed. Please try again later.",});
     }
   };
 
@@ -71,7 +72,8 @@ function App() {
           placeholder="e.g. Jane Doe (optional)"
           value={plusOne}
           onChange={(e) => setPlusOne(e.target.value)}/>
-        <button onClick={submitRSVP}>Submit</button>
+        <button onClick={() => submitRSVP(true)}>Accept</button>
+        <button onClick={() => submitRSVP(false)}>Decline</button>
         {response?.message && (<p>{response.message}</p>)}
       </div>
 
