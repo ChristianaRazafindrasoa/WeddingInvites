@@ -6,9 +6,8 @@ function App() {
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
+  const [response, setResponse] = useState(null);
   const [showPayments, setShowPayments] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/info")
@@ -16,23 +15,22 @@ function App() {
       .then(data => setWedding(data));
   }, []);
 
-  const submitRSVP = () => {
-    fetch("http://localhost:8080/api/rsvp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        mainGuestName: mainGuest,
-        plusOneName: plusOne
-      })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(() => setSubmitted(true))
-    .catch(() => setFailed(true));
+  const submitRSVP = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/rsvp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mainGuestName: mainGuest,
+          plusOneName: plusOne,
+        }),
+      });
+      setResponse(await response.json());
+    } catch (err) { 
+        setResponse({message: "RSVP failed. Please try again later.",});
+    }
   };
 
   if (!wedding) {
@@ -64,22 +62,18 @@ function App() {
       </ul>
 
       <h2>RSVP</h2>
-      {submitted ? (<p>Thank you for attending.</p>) : (
-        <div className="rsvp-form">
-          <input
-            placeholder="e.g. John Doe"
-            value={mainGuest}
-            onChange={(e) => setMainGuest(e.target.value)}
-          />
-          <input
-            placeholder="e.g. Jane Doe (optional)"
-            value={plusOne}
-            onChange={(e) => setPlusOne(e.target.value)}
-          />
-          <button onClick={submitRSVP}>Submit</button>
-          {failed && <p>RSVP failed.<br></br>Please try again later.</p>}
-        </div>
-      )}
+      <div className="rsvp-form">
+        <input
+          placeholder="e.g. John Doe"
+          value={mainGuest}
+          onChange={(e) => setMainGuest(e.target.value)}/>
+        <input
+          placeholder="e.g. Jane Doe (optional)"
+          value={plusOne}
+          onChange={(e) => setPlusOne(e.target.value)}/>
+        <button onClick={submitRSVP}>Submit</button>
+        {response?.message && (<p>{response.message}</p>)}
+      </div>
 
       <h2>Gallery</h2>
       <div className="gallery-section">

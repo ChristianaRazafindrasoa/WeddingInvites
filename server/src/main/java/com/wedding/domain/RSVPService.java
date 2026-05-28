@@ -1,5 +1,7 @@
 package com.wedding.domain;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 
 import com.wedding.data.GuestRepository;
@@ -21,29 +23,37 @@ public class RSVPService {
 
     public RSVPResponse submit(RSVPRequest request) {
         Guest mainGuest = guestRepo
-            .findByFullName(request.mainGuestName())
-            .orElseThrow(() -> new RuntimeException("Guest not found"));
-        mainGuest.setConfirmed();
-        guestRepo.save(mainGuest);
-
+                .findByFullName(request.mainGuestName())
+                .orElseThrow(() ->
+                        new RuntimeException("Main guest not found"));
+        RSVP rsvp = rsvpRepo
+                .findByMainGuest(mainGuest)
+                .orElseThrow(() ->
+                        new RuntimeException("RSVP not found."));
+        if (rsvp.getRespondedAt() != null) {
+            throw new IllegalStateException("RSVP already submitted.");
+        }
         Guest plusOne = null;
         if (request.plusOneName() != null && !request.plusOneName().isBlank()) {
-            plusOne = guestRepo.findByFullName(request.plusOneName())
-                    .orElse(null);
-            if (plusOne != null) {
-                plusOne.setConfirmed();
-                guestRepo.save(plusOne);
-            }
+            plusOne = guestRepo
+                    .findByFullName(request.plusOneName())
+                    .orElseThrow(() ->
+                            new RuntimeException("Plus one not found"));
+            plusOne.setAttending();
+            plusOne = guestRepo.save(plusOne);
         }
 
-        RSVP rsvp = new RSVP(mainGuest, plusOne);
+        mainGuest.setAttending();
+        mainGuest = guestRepo.save(mainGuest);
+
+        rsvp.setRespondedAt(LocalDateTime.now());
         RSVP saved = rsvpRepo.save(rsvp);
-        System.out.println(rsvp);
         return new RSVPResponse(
                 saved.getMainGuest().getFullName(),
-                saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
-                saved.getPlusOne() != null,
-                true
+                saved.getPlusOne() != null
+                        ? saved.getPlusOne().getFullName()
+                        : null,
+                "Thank you for attending."
         );
     }
 }

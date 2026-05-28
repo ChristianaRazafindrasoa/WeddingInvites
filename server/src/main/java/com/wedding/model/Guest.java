@@ -1,5 +1,6 @@
 package com.wedding.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,20 +12,25 @@ import jakarta.persistence.Table;
 public class Guest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "guest_id")
+    private Integer id;
+    @Column(name = "name")
     private String fullName;
+    @Column(name = "phone")
     private String phoneNumber;
+    @Column(name = "has_plus_one")
     private boolean hasPlusOne;
-    private boolean isConfirmed;
+    @Column(name = "is_attending")
+    private boolean isAttending;
 
     public Guest() {}
 
-    public Guest(int id, String fullName, String phoneNumber, boolean hasPlusOne, boolean isConfirmed) {
+    public Guest(int id, String fullName, String phoneNumber, boolean hasPlusOne, boolean isAttending) {
         this.id = id;
         this.fullName = fullName;
         this.phoneNumber = phoneNumber;
         this.hasPlusOne = hasPlusOne;
-        this.isConfirmed = isConfirmed;
+        this.isAttending = isAttending;
     }
 
     public int getId() {
@@ -39,19 +45,19 @@ public class Guest {
         return phoneNumber;
     }
 
-    public boolean isHasPlusOne() {
+    public boolean hasPlusOne() {
         return hasPlusOne;
     }
 
-    public boolean isConfirmed() {
-        return isConfirmed;
+    public boolean isAttending() {
+        return isAttending;
     }
 
-    public void setConfirmed() {
-        isConfirmed = true;
+    public void setAttending() {
+        isAttending = true;
     }
 
-    public void undoConfirmed() {
-        isConfirmed = false;
+    public void undoAttending() {
+        isAttending = false;
     }
 }

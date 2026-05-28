@@ -1,9 +1,13 @@
 package com.wedding.model;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -12,17 +16,23 @@ import jakarta.persistence.Table;
 public class RSVP {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "rsvp_id")
+    private Integer id;
     @OneToOne
+    @JoinColumn(name = "main_guest_id")
     private Guest mainGuest;
     @OneToOne
+    @JoinColumn(name = "plus_one_id")
     private Guest plusOne;
+    @Column(name = "responded_at")
+    private LocalDateTime respondedAt;
 
     public RSVP() {}
 
-    public RSVP(Guest mainGuest, Guest plusOne) {
+    public RSVP(Guest mainGuest, Guest plusOne, LocalDateTime respondedAt) {
         this.mainGuest = mainGuest;
         this.plusOne = plusOne;
+        this.respondedAt = respondedAt;
     }
 
     public int getId() {
@@ -35,5 +45,13 @@ public class RSVP {
 
     public Guest getPlusOne() {
         return plusOne;
+    }
+
+    public LocalDateTime getRespondedAt() {
+        return respondedAt;
+    }
+
+    public void setRespondedAt(LocalDateTime timestamp) {
+        respondedAt = timestamp;
     }
 }
