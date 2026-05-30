@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Sql(
-    scripts = "/sql/set-good-known-state.sql",
+    scripts = "sql/set-known-good-state.sql",
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
 )
 class RSVPControllerTest {
