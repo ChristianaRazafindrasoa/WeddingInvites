@@ -17,6 +17,13 @@ function App() {
 
   const submitRSVP = async (attending) => {
     try {
+      const confirmed = window.confirm(
+        `Are you sure you want to ${attending ? "accept" : "decline"}? 1 submission allowed.`
+      );
+      if (!confirmed) {
+        return;
+      }
+
       const response = await fetch("http://localhost:8080/api/rsvp", {
         method: "POST",
         headers: {
@@ -64,17 +71,21 @@ function App() {
 
       <h2>RSVP</h2>
       <div className="rsvp-form">
-        <input
-          placeholder="e.g. John Doe"
-          value={mainGuest}
-          onChange={(e) => setMainGuest(e.target.value)}/>
-        <input
-          placeholder="e.g. Jane Doe (optional)"
-          value={plusOne}
-          onChange={(e) => setPlusOne(e.target.value)}/>
-        <button onClick={() => submitRSVP(true)}>Accept</button>
-        <button onClick={() => submitRSVP(false)}>Decline</button>
-        {response?.message && (<p>{response.message}</p>)}
+        {response?.message ? (<p>{response.message}</p>) : (
+          <div>
+            <input
+              placeholder="e.g. John Doe"
+              value={mainGuest}
+              onChange={(e) => setMainGuest(e.target.value)}/>
+            <input
+              title="Plus one"
+              placeholder="e.g. Jane Doe (optional)"
+              value={plusOne}
+              onChange={(e) => setPlusOne(e.target.value)}/>
+            <button onClick={() => submitRSVP(true)}>Accept</button>
+            <button onClick={() => submitRSVP(false)}>Decline</button>
+          </div>
+        )}
       </div>
 
       <h2>Gallery</h2>

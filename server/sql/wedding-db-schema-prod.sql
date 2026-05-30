@@ -32,7 +32,7 @@ CREATE TABLE rsvp (
         REFERENCES wedding_info(wedding_id),
 	FOREIGN KEY (main_guest_id)
         REFERENCES guest(guest_id),
-	FOREIGN KEY (main_guest_id)
+	FOREIGN KEY (plus_one_id)
         REFERENCES guest(guest_id)
 );
  
