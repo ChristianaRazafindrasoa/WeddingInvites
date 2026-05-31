@@ -47,7 +47,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1>{wedding.coupleNames}</h1>
+      <h1>{wedding.groomName} & {wedding.brideName}</h1>
       <p><strong>Date:</strong> {wedding.weddingDate}</p>
       <p><strong>City:</strong> {wedding.city}</p>
 
@@ -55,7 +55,6 @@ function App() {
       <ul className="event-list">
         {wedding.events.map((event, index) => (
           <li key={index}>
-            <br></br>
             <strong>{event.name}</strong>
             <div>{event.location}</div>
             <div>{event.address}</div>
@@ -65,6 +64,7 @@ function App() {
                 minute: "2-digit"
               })}
             </div>
+            <br></br>
           </li>
         ))}
       </ul>

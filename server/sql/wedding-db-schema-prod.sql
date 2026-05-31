@@ -10,6 +10,17 @@ CREATE TABLE wedding_info (
     `date` DATE NOT NULL
 );
 
+CREATE TABLE wedding_event (
+	event_id INT AUTO_INCREMENT PRIMARY KEY,
+    wedding_id INT NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
+    start_time DATETIME NOT NULL,
+    FOREIGN KEY (wedding_id)
+        REFERENCES wedding_info(wedding_id)
+);
+
 CREATE TABLE guest (
     guest_id INT AUTO_INCREMENT PRIMARY KEY,
     wedding_id INT NOT NULL,
@@ -35,10 +46,14 @@ CREATE TABLE rsvp (
 	FOREIGN KEY (plus_one_id)
         REFERENCES guest(guest_id)
 );
- 
+
 INSERT INTO wedding_info (groom_name, bride_name, city, `date`) VALUES
 	('Nicholas', 'Christiana', 'Tampa, Florida', '2026-12-12');
     
+INSERT INTO wedding_event (wedding_id, `name`, location, address, start_time) VALUES
+	(1, 'Ceremony', 'Amazing Church', '123 Mary Dr, Land O\'Lakes', '2026-12-12-08-15-00'),
+	(1, 'Dinner', 'Awesome Restaurant', '456 Mall Dr, Tampa', '2026-12-12-09-30-00');
+
 INSERT INTO guest (wedding_id, `name`, phone, has_plus_one, is_attending) VALUES
 	(1, 'Foo Test', '1234567890', true, false),
     (1, 'Bar Test', null, false, false),
