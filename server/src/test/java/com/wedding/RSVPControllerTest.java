@@ -13,16 +13,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(
-    scripts = "sql/set-known-good-state.sql",
-    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
-)
+@Sql(scripts = "classpath:sql/set-known-good-state.sql")
 class RSVPControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void submitRsvp_returnsOk_whenMainGuestAndPlusOneValid() throws Exception {
+    void submitRsvpReturnsOkWhenMainGuestAndPlusOneValid() throws Exception {
         String requestBody = "{" +
                 "\"mainGuestName\":\"Foo Test\"," +
                 "\"plusOneName\":\"Bar Test\"," +
@@ -42,7 +39,7 @@ class RSVPControllerTest {
     }
 
     @Test
-    void submitRsvp_returnsBadRequest_whenAlreadySubmitted() throws Exception {
+    void submitRsvpRturnsBadRequestWhenAlreadySubmitted() throws Exception {
         String requestBody = "{" +
                 "\"mainGuestName\":\"Foo Test\"," +
                 "\"plusOneName\":\"Bar Test\"," +
