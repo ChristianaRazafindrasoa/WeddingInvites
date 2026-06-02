@@ -2,17 +2,38 @@ import { useEffect, useState } from "react";
 import "./index.css";
 
 function App() {
-  const photos = ["/images/photo1.jpg","/images/photo2.jpg","/images/photo3.jpg"];
+  const photos = ["/images/photo1.jpg", "/images/photo2.jpg", "/images/photo3.jpg"];
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
+  const [allowPlusOne, setAllowPlusOne] = useState(true);
+  const [token, setToken] = useState("");
   const [response, setResponse] = useState(null);
   const [showPayments, setShowPayments] = useState(false);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/info")
-      .then(res => res.json())
-      .then(data => setWedding(data));
+      .then((res) => res.json())
+      .then((data) => setWedding(data));
+
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken) {
+      setToken(urlToken);
+      fetch(`http://localhost:8080/api/rsvp?token=${encodeURIComponent(urlToken)}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Token not found");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          setMainGuest(data.mainGuestName || "");
+          setPlusOne(data.plusOneName || "");
+          setAllowPlusOne(data.hasPlusOne === true);
+        })
+        .catch((err) => setResponse({message: "Failed to load RSVP data."}));
+    }
   }, []);
 
   const submitRSVP = async (attending) => {
@@ -23,21 +44,21 @@ function App() {
       if (!confirmed) {
         return;
       }
-
       const response = await fetch("http://localhost:8080/api/rsvp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          token,
           mainGuestName: mainGuest,
           plusOneName: plusOne,
-          isAccepted: attending
+          isAccepted: attending,
         }),
       });
       setResponse(await response.json());
-    } catch (err) { 
-      setResponse({message: "RSVP failed. Please try again later.",});
+    } catch (err) {
+      setResponse({ message: "RSVP failed. Please try again later." });
     }
   };
 
@@ -58,13 +79,10 @@ function App() {
             <strong>{event.name}</strong>
             <div>{event.location}</div>
             <div>{event.address}</div>
-            <div>
-              {new Date(event.startTime).toLocaleTimeString([], {
+            <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
-                minute: "2-digit"
-              })}
-            </div>
-            <br></br>
+                minute: "2-digit"})}
+            </div><br />
           </li>
         ))}
       </ul>
@@ -77,11 +95,14 @@ function App() {
               placeholder="e.g. John Doe"
               value={mainGuest}
               onChange={(e) => setMainGuest(e.target.value)}/>
-            <input
-              title="Plus one"
-              placeholder="e.g. Jane Doe (optional)"
-              value={plusOne}
-              onChange={(e) => setPlusOne(e.target.value)}/>
+            {allowPlusOne && (
+              <input
+                title="Plus one"
+                placeholder="e.g. Jane Doe (optional)"
+                value={plusOne}
+                onChange={(e) => setPlusOne(e.target.value)}
+                readOnly={!!token}/>
+            )}
             <button onClick={() => submitRSVP(true)}>Accept</button>
             <button onClick={() => submitRSVP(false)}>Decline</button>
           </div>
@@ -93,7 +114,7 @@ function App() {
         <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
           {photos.map((photo, index) => (
-            <img src={photo} alt={`${index + 1}`} className="gallery-img"/>
+            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index} />
           ))}
         </div>
       </div>
@@ -101,25 +122,25 @@ function App() {
       <h2>Registry</h2>
       <div className="registry">
         <p>
-          Your presence is the greatest gift, <br></br>
-          but if you'd like to contribute to our honeymoon fund, <br></br>
+          Your presence is the greatest gift,<br/>
+          but if you'd like to contribute to our honeymoon fund,<br/>
           you can do so below.
         </p>
         <button onClick={() => setShowPayments(!showPayments)}>Contribute</button>
         {showPayments && (
           <div>
             <div className="payment-options">
-            <div className="payment-card">
-              <img src="/images/venmo.jpg" alt="Venmo QR" />
-              <p>Nick</p>
+              <div className="payment-card">
+                <img src="/images/venmo.jpg" alt="Venmo QR" />
+                <p>Nick</p>
+              </div>
+              <div className="payment-card">
+                <img src="/images/zelle.jpg" alt="Zelle QR" />
+                <p>Christiana</p>
+              </div>
             </div>
-            <div className="payment-card">
-              <img src="/images/zelle.jpg" alt="Zelle QR" />
-              <p>Christiana</p>
-            </div>
+            <p>Thank you in advance for contributing.</p>
           </div>
-          <p>Thank you in advance for contributing.</p>
-        </div>    
         )}
       </div>
     </div>
