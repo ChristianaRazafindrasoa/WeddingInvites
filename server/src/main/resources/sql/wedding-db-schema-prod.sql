@@ -34,6 +34,7 @@ CREATE TABLE guest (
 
 CREATE TABLE rsvp (
     rsvp_id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(6) NOT NULL UNIQUE,
     wedding_id INT NOT NULL,
     main_guest_id INT NOT NULL,
     plus_one_id INT,
@@ -51,7 +52,7 @@ INSERT INTO wedding_info (groom_name, bride_name, city, `date`) VALUES
 	('Nicholas', 'Christiana', 'Tampa, Florida', '2026-12-12');
     
 INSERT INTO wedding_event (wedding_id, `name`, location, address, start_time) VALUES
-	(1, 'Ceremony', 'Amazing Church', '123 Mary Dr, Land O\'Lakes', '2026-12-12-08-15-00'),
+	(1, 'Ceremony', 'Amazing Church', '123 Mary Dr, Tampa', '2026-12-12-08-15-00'),
 	(1, 'Dinner', 'Awesome Restaurant', '456 Mall Dr, Tampa', '2026-12-12-09-30-00');
 
 INSERT INTO guest (wedding_id, `name`, phone, has_plus_one, is_attending) VALUES
@@ -59,6 +60,6 @@ INSERT INTO guest (wedding_id, `name`, phone, has_plus_one, is_attending) VALUES
     (1, 'Bar Test', null, false, false),
     (1, 'Test McTest', '9876543210', false, false);
     
-INSERT INTO rsvp (wedding_id, main_guest_id, plus_one_id, responded_at, is_accepted) VALUES
-	(1, 1, 2, null, false),
-    (1, 3, null, null, false);   
+INSERT INTO rsvp (token, wedding_id, main_guest_id, plus_one_id, responded_at, is_accepted) VALUES
+	('abc123', 1, 1, 2, null, false),
+    ('123abc', 1, 3, null, null, false);   

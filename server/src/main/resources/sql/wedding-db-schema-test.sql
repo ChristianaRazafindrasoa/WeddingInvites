@@ -23,6 +23,7 @@ CREATE TABLE guest (
 
 CREATE TABLE rsvp (
     rsvp_id INT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(6) NOT NULL UNIQUE,
     wedding_id INT NOT NULL,
     main_guest_id INT NOT NULL,
     plus_one_id INT,

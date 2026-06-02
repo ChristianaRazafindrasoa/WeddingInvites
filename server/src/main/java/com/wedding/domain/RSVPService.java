@@ -21,40 +21,51 @@ public class RSVPService {
         this.rsvpRepo = rsvpRepo;
     }
 
+    public RSVPResponse findByToken(String token) {
+        RSVP rsvp = rsvpRepo.findByToken(token)
+            .orElseThrow(() -> new RuntimeException("RSVP not found."));
+
+        return new RSVPResponse(
+            rsvp.getMainGuest().getFullName(),
+            rsvp.getPlusOne() != null ? rsvp.getPlusOne().getFullName() : null,
+            rsvp.getMainGuest().hasPlusOne(),
+            null
+        );
+    }
+
     public RSVPResponse submit(RSVPRequest request) {
-        boolean attending = request.isAccepted();
-        Guest mainGuest = guestRepo
-                .findByFullName(request.mainGuestName())
-                .orElseThrow(() ->
-                        new RuntimeException("Main guest not found"));
-        RSVP rsvp = rsvpRepo
-                .findByMainGuest(mainGuest)
-                .orElseThrow(() ->
-                        new RuntimeException("RSVP not found."));
+        RSVP rsvp = rsvpRepo.findByToken(request.token())
+            .orElseThrow(() -> new RuntimeException("RSVP token not found."));
+
         if (rsvp.getRespondedAt() != null) {
             throw new IllegalStateException("RSVP already submitted.");
         }
+
+        Guest mainGuest = rsvp.getMainGuest();
+        if (!mainGuest.getFullName().equals(request.mainGuestName())) {
+            throw new RuntimeException("Guest does not match token.");
+        }
+
         Guest plusOne = null;
         if (request.plusOneName() != null && !request.plusOneName().isBlank()) {
-            plusOne = guestRepo
-                    .findByFullName(request.plusOneName())
-                    .orElseThrow(() ->
-                            new RuntimeException("Plus one not found"));
-            plusOne.setAttending(attending);
+            plusOne = guestRepo.findByFullName(request.plusOneName())
+                .orElseThrow(() -> new RuntimeException("Plus one not found"));
+            plusOne.setAttending(request.isAccepted());
             plusOne = guestRepo.save(plusOne);
         }
 
-        mainGuest.setAttending(attending);
-        mainGuest = guestRepo.save(mainGuest);
+        mainGuest.setAttending(request.isAccepted());
+        guestRepo.save(mainGuest);
 
         rsvp.setRespondedAt(LocalDateTime.now());
-        rsvp.setAccepted(attending);
-        
+        rsvp.setAccepted(request.isAccepted());
         RSVP saved = rsvpRepo.save(rsvp);
+
         return new RSVPResponse(
-                saved.getMainGuest().getFullName(),
-                saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
-                attending ? "Thank you for attending." : "Thank you, we'll miss you."
+            saved.getMainGuest().getFullName(),
+            saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
+            saved.getMainGuest().hasPlusOne(),
+            request.isAccepted() ? "Thank you for attending." : "Thank you, we'll miss you."
         );
     }
 }

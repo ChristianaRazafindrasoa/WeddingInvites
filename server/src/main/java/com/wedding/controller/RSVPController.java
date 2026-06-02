@@ -19,6 +19,15 @@ public class RSVPController {
         this.rsvpService = rsvpService;
     }
 
+    @GetMapping
+    public ResponseEntity<RSVPResponse> getByToken(@RequestParam String token) {
+        try {
+            return ResponseEntity.ok(rsvpService.findByToken(token));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PostMapping
     public ResponseEntity<RSVPResponse> submit(@RequestBody RSVPRequest request) {
         try {
@@ -29,6 +38,7 @@ public class RSVPController {
                 new RSVPResponse(
                         null,
                         null,
+                        false,
                         e.getMessage()
                 )
             );
@@ -37,6 +47,7 @@ public class RSVPController {
                 new RSVPResponse(
                         null,
                         null,
+                        false,
                         e.getMessage()
                 )
             );

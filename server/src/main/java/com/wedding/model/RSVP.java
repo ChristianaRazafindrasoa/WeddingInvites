@@ -18,6 +18,8 @@ public class RSVP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rsvp_id")
     private Integer id;
+    @Column(name = "token")
+    private String token;
     @OneToOne
     @JoinColumn(name = "main_guest_id")
     private Guest mainGuest;
@@ -31,7 +33,8 @@ public class RSVP {
 
     public RSVP() {}
 
-    public RSVP(Guest mainGuest, Guest plusOne, LocalDateTime respondedAt, boolean isAccepted) {
+    public RSVP(String token, Guest mainGuest, Guest plusOne, LocalDateTime respondedAt, boolean isAccepted) {
+        this.token = token;
         this.mainGuest = mainGuest;
         this.plusOne = plusOne;
         this.respondedAt = respondedAt;
@@ -40,6 +43,10 @@ public class RSVP {
 
     public int getId() {
         return id;
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public Guest getMainGuest() {
