@@ -87,6 +87,22 @@ h2 {
   border-radius: 16px;
 }
 
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.admin-table th, .admin-table td {
+  border: 1px solid #dfdcda;
+  padding: 10px;
+  text-align: left;
+}
+
+.admin-table th {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .loading {
   margin-top: 100px;
   text-align: center;

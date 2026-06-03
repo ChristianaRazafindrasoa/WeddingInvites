@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./index.css";
+import AdminPanel from "./Admin";
 
-function App() {
+function Invitation() {
   const photos = ["/images/photo1.jpg", "/images/photo2.jpg", "/images/photo3.jpg"];
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
@@ -94,7 +95,8 @@ function App() {
             <input
               placeholder="e.g. John Doe"
               value={mainGuest}
-              onChange={(e) => setMainGuest(e.target.value)}/>
+              onChange={(e) => setMainGuest(e.target.value)}
+              readOnly={!!token}/>
             {allowPlusOne && (
               <input
                 title="Plus one"
@@ -147,4 +149,6 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return window.location.pathname === "/admin" ? <AdminPanel /> : <Invitation />;
+}
