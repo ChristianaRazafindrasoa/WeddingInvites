@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,6 +22,7 @@ class RSVPControllerTest {
     @Test
     void submitRsvpReturnsOkWhenMainGuestAndPlusOneValid() throws Exception {
         String requestBody = "{" +
+                "\"token\":\"abc123\"," +
                 "\"mainGuestName\":\"Foo Test\"," +
                 "\"plusOneName\":\"Bar Test\"," +
                 "\"isAccepted\":true" +
@@ -41,6 +43,7 @@ class RSVPControllerTest {
     @Test
     void submitRsvpRturnsBadRequestWhenAlreadySubmitted() throws Exception {
         String requestBody = "{" +
+                "\"token\":\"abc123\"," +
                 "\"mainGuestName\":\"Foo Test\"," +
                 "\"plusOneName\":\"Bar Test\"," +
                 "\"isAccepted\":true" +
@@ -57,5 +60,40 @@ class RSVPControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message")
                         .value("RSVP already submitted."));
+    }
+
+    @Test
+    void submitRsvpReturnsNotFoundWhenTokenInvalid() throws Exception {
+        String requestBody = "{" +
+                "\"token\":\"invalid-token\"," +
+                "\"mainGuestName\":\"Foo Test\"," +
+                "\"plusOneName\":\"Bar Test\"," +
+                "\"isAccepted\":true" +
+                "}";
+
+        mockMvc.perform(post("/api/rsvp")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value("RSVP token not found."));
+    }
+
+    @Test
+    void getByTokenReturnsOkWhenTokenValid() throws Exception {
+        mockMvc.perform(get("/api/rsvp")
+                .param("token", "abc123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mainGuestName")
+                        .value("Foo Test"))
+                .andExpect(jsonPath("$.plusOneName")
+                        .value("Bar Test"));
+    }
+
+    @Test
+    void getByTokenReturnsNotFoundWhenTokenInvalid() throws Exception {
+        mockMvc.perform(get("/api/rsvp")
+                .param("token", "invalid-token"))
+                .andExpect(status().isNotFound());
     }
 }
