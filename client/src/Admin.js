@@ -8,12 +8,15 @@ export default function AdminPanel() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
+
     Promise.all([
-      fetch("http://localhost:8080/api/admin/guests").then((res) => {
+      fetch("http://localhost:8080/api/admin/guests", { cache: "no-store" }).then((res) => {
         if (!res.ok) throw new Error("Failed to load guests");
         return res.json();
       }),
-      fetch("http://localhost:8080/api/admin/rsvps").then((res) => {
+      fetch("http://localhost:8080/api/admin/rsvps", { cache: "no-store" }).then((res) => {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),
@@ -33,7 +36,7 @@ export default function AdminPanel() {
   if (error) {
     return (
       <div className="container">
-        <h2><strong>Dashboard</strong></h2>
+        <h2>Error loading dashboard...</h2>
         <p className="error">{error}</p>
       </div>
     );
@@ -41,15 +44,12 @@ export default function AdminPanel() {
 
   return (
     <div className="container">
-      <h2>Admin</h2>
-
       <section>
-        <h3>Guest List</h3>
+        <h2>Guest List</h2>
         <table className="admin-table">
           <thead>
             <tr>
               <th>Name</th>
-              <th>Plus One</th>
               <th>Attending</th>
             </tr>
           </thead>
@@ -57,8 +57,7 @@ export default function AdminPanel() {
             {guests.map((guest) => (
               <tr key={guest.id}>
                 <td>{guest.fullName}</td>
-                <td>{guest.hasPlusOne ? "Yes" : "No"}</td>
-                <td>{guest.isAttending ? "Yes" : "No"}</td>
+                <td>{guest.attending ? "Yes" : "No"}</td>
               </tr>
             ))}
           </tbody>
@@ -66,7 +65,7 @@ export default function AdminPanel() {
       </section>
 
       <section>
-        <h3>RSVP List</h3>
+        <h2>RSVP List</h2>
         <table className="admin-table">
           <thead>
             <tr>
@@ -84,7 +83,7 @@ export default function AdminPanel() {
                 <td>{rsvp.mainGuest?.fullName ?? "-"}</td>
                 <td>{rsvp.plusOne?.fullName ?? "-"}</td>
                 <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt).toLocaleString() : "No"}</td>
-                <td>{rsvp.isAccepted ? "Yes" : "No"}</td>
+                <td>{rsvp.accepted ? "Yes" : "No"}</td>
               </tr>
             ))}
           </tbody>
