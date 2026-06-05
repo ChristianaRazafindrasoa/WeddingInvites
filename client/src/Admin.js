@@ -6,17 +6,28 @@ export default function AdminPanel() {
   const [rsvps, setRsvps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState("all");
+
+  const guestCount = guests.length;
+  const attendingCount = guests.filter((guest) => guest.attending).length;
+
+  const filteredRsvps = rsvps.filter((rsvp) => {
+    if (filter === "accepted") return rsvp.accepted === true;
+    if (filter === "declined") return rsvp.respondedAt && rsvp.accepted === false;
+    if (filter === "pending") return !rsvp.respondedAt;
+    return true;
+  });
 
   useEffect(() => {
     setLoading(true);
     setError(null);
 
     Promise.all([
-      fetch("http://localhost:8080/api/admin/guests", { cache: "no-store" }).then((res) => {
+      fetch("http://localhost:8080/api/admin/guests").then((res) => {
         if (!res.ok) throw new Error("Failed to load guests");
         return res.json();
       }),
-      fetch("http://localhost:8080/api/admin/rsvps", { cache: "no-store" }).then((res) => {
+      fetch("http://localhost:8080/api/admin/rsvps").then((res) => {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),
@@ -46,6 +57,7 @@ export default function AdminPanel() {
     <div className="container">
       <section>
         <h2>Guest List</h2>
+        <p>Total guests: {guestCount} | Attending: {attendingCount}</p>
         <table className="admin-table">
           <thead>
             <tr>
@@ -65,7 +77,15 @@ export default function AdminPanel() {
       </section>
 
       <section>
-        <h2>RSVP List</h2>
+        <h2>RSVP Dashboard</h2>
+        <div className="filter-bar">
+          <button type="button" className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
+          <button type="button" className={filter === "accepted" ? "active" : ""} onClick={() => setFilter("accepted")}>Accepted</button>
+          <button type="button" className={filter === "declined" ? "active" : ""} onClick={() => setFilter("declined")}>Declined</button>
+          <button type="button" className={filter === "pending" ? "active" : ""} onClick={() => setFilter("pending")}>Pending</button>
+        </div>
+        <p className="filter-summary">Showing {filteredRsvps.length}{filter === "all" ? " sent RSVPs" : ` ${filter} RSVPs`}</p>
+
         <table className="admin-table">
           <thead>
             <tr>
@@ -73,19 +93,25 @@ export default function AdminPanel() {
               <th>Main Guest</th>
               <th>Plus One</th>
               <th>Responded</th>
-              <th>Accepted</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {rsvps.map((rsvp) => (
-              <tr key={rsvp.id}>
-                <td>{rsvp.token}</td>
-                <td>{rsvp.mainGuest?.fullName ?? "-"}</td>
-                <td>{rsvp.plusOne?.fullName ?? "-"}</td>
-                <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt).toLocaleString() : "No"}</td>
-                <td>{rsvp.accepted ? "Yes" : "No"}</td>
-              </tr>
-            ))}
+            {filteredRsvps.map((rsvp) => {
+              const status = !rsvp.respondedAt ? "Pending" : rsvp.accepted ? "Accepted" : "Declined";
+              return (
+                <tr key={rsvp.id}>
+                  <td>{rsvp.token}</td>
+                  <td>{rsvp.mainGuest?.fullName ?? "-"}</td>
+                  <td>{rsvp.plusOne?.fullName ?? "-"}</td>
+                  <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt).toLocaleString() : "-"}</td>
+                  <td>
+                    <span className={`status-dot ${status.toLowerCase()}`} />
+                    {status}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </section>

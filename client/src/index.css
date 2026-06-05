@@ -12,7 +12,7 @@ body {
 }
 
 h2 {
-  margin-top: 90px;
+  margin-top: 50px;
 }
 
 .event-list {
@@ -101,6 +101,51 @@ h2 {
 
 .admin-table th {
   background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-bar button {
+  background: transparent;
+  border: 1px solid #dfdcda;
+  color: #dfdcda;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.2s ease, color 0.2s ease;
+}
+
+.filter-bar button:hover,
+.filter-bar button.active {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-dot.accepted {
+  background: #4caf50;
+}
+
+.status-dot.declined {
+  background: #f44336;
+}
+
+.status-dot.pending {
+  background: #ffeb3b;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
 
 .loading {
