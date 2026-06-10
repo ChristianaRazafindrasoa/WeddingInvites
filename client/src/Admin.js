@@ -6,17 +6,9 @@ export default function AdminPanel() {
   const [rsvps, setRsvps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("all");
 
   const guestCount = guests.length;
   const attendingCount = guests.filter((guest) => guest.attending).length;
-
-  const filteredRsvps = rsvps.filter((rsvp) => {
-    if (filter === "accepted") return rsvp.accepted === true;
-    if (filter === "declined") return rsvp.respondedAt && rsvp.accepted === false;
-    if (filter === "pending") return !rsvp.respondedAt;
-    return true;
-  });
 
   useEffect(() => {
     setLoading(true);
@@ -78,14 +70,6 @@ export default function AdminPanel() {
 
       <section>
         <h2>RSVP Dashboard</h2>
-        <div className="filter-bar">
-          <button type="button" className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
-          <button type="button" className={filter === "accepted" ? "active" : ""} onClick={() => setFilter("accepted")}>Accepted</button>
-          <button type="button" className={filter === "declined" ? "active" : ""} onClick={() => setFilter("declined")}>Declined</button>
-          <button type="button" className={filter === "pending" ? "active" : ""} onClick={() => setFilter("pending")}>Pending</button>
-        </div>
-        <p className="filter-summary">Showing {filteredRsvps.length}{filter === "all" ? " sent RSVPs" : ` ${filter} RSVPs`}</p>
-
         <table className="admin-table">
           <thead>
             <tr>
@@ -97,7 +81,7 @@ export default function AdminPanel() {
             </tr>
           </thead>
           <tbody>
-            {filteredRsvps.map((rsvp) => {
+            {rsvps.map((rsvp) => {
               const status = !rsvp.respondedAt ? "Pending" : rsvp.accepted ? "Accepted" : "Declined";
               return (
                 <tr key={rsvp.id}>

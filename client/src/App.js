@@ -10,10 +10,11 @@ function Invitation() {
   const [allowPlusOne, setAllowPlusOne] = useState(true);
   const [token, setToken] = useState("");
   const [response, setResponse] = useState(null);
-  const [showPayments, setShowPayments] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/info")
+    fetch('http://localhost:8080/api/info')
       .then((res) => res.json())
       .then((data) => setWedding(data));
 
@@ -45,7 +46,7 @@ function Invitation() {
       if (!confirmed) {
         return;
       }
-      const response = await fetch("http://localhost:8080/api/rsvp", {
+      const response = await fetch('http://localhost:8080/api/rsvp', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,15 +64,61 @@ function Invitation() {
     }
   };
 
+  const handleDonation = async () => {
+    const response = await fetch('http://localhost:8080/api/honeymoon-fund', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amount,
+        token: token,
+        name: mainGuest
+      })
+    });
+    
+    const session = await response.json();
+    window.location.href = session.url;
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      setShowSuccess(true);
+      const sessionId = params.get("id")
+      fetch(`http://localhost:8080/api/checkout-session/${sessionId}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error("Failed to retrieve session");
+        }
+        return res.json();
+      })
+      .then(data => {
+        setAmount(data.amount);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+    }
+  }, []);
+
   if (!wedding) {
     return <h2>Loading wedding data...</h2>;
   }
 
   return (
     <div className="container">
+      {showSuccess && (
+        <div className="success">
+          <p>Payment received: ${amount}</p>
+          <p>Thank you for contributing to our honeymoon fund 🤍.</p>
+          <p>- {wedding.groomName} & {wedding.brideName}</p>
+          <button onClick={() => setShowSuccess(false)}>You're welcome</button>
+        </div>
+      )}
       <h1>{wedding.groomName} & {wedding.brideName}</h1>
-      <p><strong>Date:</strong> {wedding.weddingDate}</p>
-      <p><strong>City:</strong> {wedding.city}</p>
+      <p>{wedding.weddingDate}</p>
+      <p>{wedding.city}</p>
 
       <h2>Events</h2>
       <ul className="event-list">
@@ -82,8 +129,7 @@ function Invitation() {
             <div>{event.address}</div>
             <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
-                minute: "2-digit"})}
-            </div><br />
+                minute: "2-digit"})}</div><br />
           </li>
         ))}
       </ul>
@@ -124,31 +170,18 @@ function Invitation() {
       <h2>Registry</h2>
       <div className="registry">
         <p>
-          Your presence is the greatest gift,<br/>
-          but if you'd like to contribute to our honeymoon fund,<br/>
-          you can do so below.
+          Your presence is the greatest gift, but if you'd like to contribute 
+          to our honeymoon fund, you can do so below.
         </p>
-        <button onClick={() => setShowPayments(!showPayments)}>Contribute</button>
-        {showPayments && (
-          <div>
-            <div className="payment-options">
-              <div className="payment-card">
-                <img src="/images/venmo.jpg" alt="Venmo QR" />
-                <p>Nick</p>
-              </div>
-              <div className="payment-card">
-                <img src="/images/zelle.jpg" alt="Zelle QR" />
-                <p>Christiana</p>
-              </div>
-            </div>
-            <p>Thank you in advance for contributing.</p>
-          </div>
-        )}
+        <input 
+          placeholder="$"
+          onChange={(e) => setAmount(e.target.value)}/><br></br>
+        <button onClick={handleDonation}>Contribute</button>
       </div>
     </div>
   );
 }
 
 export default function App() {
-  return window.location.pathname === "/admin" ? <AdminPanel /> : <Invitation />;
+  return window.location.pathname === "/admin" ? <AdminPanel/> : <Invitation/>;
 }
