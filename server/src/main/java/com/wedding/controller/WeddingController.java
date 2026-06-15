@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.stripe.Stripe;
@@ -18,6 +19,9 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.wedding.data.WeddingInfoRepository;
+import com.wedding.domain.RSVPService;
+import com.wedding.dto.RSVPRequest;
+import com.wedding.dto.RSVPResponse;
 import com.wedding.model.WeddingInfo;
 
 @RestController
@@ -25,17 +29,55 @@ import com.wedding.model.WeddingInfo;
 @CrossOrigin(origins = "http://localhost:3000")
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
+    private final RSVPService rsvpService;
 
     public WeddingController(
             WeddingInfoRepository infoRepo, 
+            RSVPService rsvpService,
             @Value("${stripe.secret.key}") String stripeApiKey) {
         this.infoRepo = infoRepo;
+        this.rsvpService = rsvpService;
         Stripe.apiKey = stripeApiKey;
     }
 
     @GetMapping("/info")
     public WeddingInfo getWeddingInfo() {
         return infoRepo.findAll().stream().findFirst().orElseThrow();
+    }
+
+    @GetMapping("/rsvp")
+    public ResponseEntity<RSVPResponse> getByToken(@RequestParam String token) {
+        try {
+            return ResponseEntity.ok(rsvpService.findByToken(token));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/rsvp")
+    public ResponseEntity<RSVPResponse> submit(@RequestBody RSVPRequest request) {
+        try {
+            RSVPResponse response = rsvpService.submit(request);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(
+                new RSVPResponse(
+                        null,
+                        null,
+                        false,
+                        e.getMessage()
+                )
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                new RSVPResponse(
+                        null,
+                        null,
+                        false,
+                        e.getMessage()
+                )
+            );
+        }
     }
 
     @PostMapping("/honeymoon-fund")
