@@ -3,7 +3,7 @@ import "./index.css";
 import AdminPanel from "./Admin";
 
 function Invitation() {
-  const photos = ["/images/photo1.jpg", "/images/photo2.jpg", "/images/photo3.jpg"];
+  const photos = ["images/photo1.jpg", "/images/photo2.jpg", "/images/photo3.jpg"];
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
@@ -12,6 +12,7 @@ function Invitation() {
   const [response, setResponse] = useState(null);
   const [amount, setAmount] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/info')
@@ -59,12 +60,16 @@ function Invitation() {
         }),
       });
       setResponse(await response.json());
+      setShowMessage(true);
     } catch (err) {
       setResponse({ message: "RSVP failed. Please try again later." });
     }
   };
 
   const handleDonation = async () => {
+    if (amount <= 0) {
+      return;
+    }
     const response = await fetch('http://localhost:8080/api/honeymoon-fund', {
       method: "POST",
       headers: {
@@ -108,17 +113,17 @@ function Invitation() {
 
   return (
     <div className="container">
-      {showSuccess && (
-        <div className="success">
-          <p>Payment received: ${amount}</p>
-          <p>Thank you for contributing to our honeymoon fund 🤍.</p>
-          <p>- {wedding.groomName} & {wedding.brideName}</p>
-          <button onClick={() => setShowSuccess(false)}>You're welcome</button>
+      <div className="hero">
+        <div className="hero-overlay">
+          <p>The wedding of</p>
+          <h1>{wedding.groomName} & {wedding.brideName}</h1>
+          <p>{new Date("2026-12-12").toLocaleDateString("en-US", 
+            {weekday: "long", month: "long", day: "numeric", year: "numeric"})
+            .replace(",", " •")
+            .replace(",", " •")}</p>       
+          <p>{wedding.city}</p>
         </div>
-      )}
-      <h1>{wedding.groomName} & {wedding.brideName}</h1>
-      <p>{wedding.weddingDate}</p>
-      <p>{wedding.city}</p>
+      </div>      
 
       <h2>Events</h2>
       <ul className="event-list">
@@ -136,25 +141,29 @@ function Invitation() {
 
       <h2>RSVP</h2>
       <div className="rsvp-form">
-        {response?.message ? (<p>{response.message}</p>) : (
-          <div>
-            <input
-              placeholder="e.g. John Doe"
-              value={mainGuest}
-              onChange={(e) => setMainGuest(e.target.value)}
+        <div>
+          <input className="name"
+            placeholder="e.g. John Doe"
+            value={mainGuest}
+            onChange={(e) => setMainGuest(e.target.value)}
+            readOnly={!!token}/>
+          {allowPlusOne && (
+            <input className="name"
+              title="Plus one"
+              placeholder="e.g. Jane Doe (optional)"
+              value={plusOne}
+              onChange={(e) => setPlusOne(e.target.value)}
               readOnly={!!token}/>
-            {allowPlusOne && (
-              <input
-                title="Plus one"
-                placeholder="e.g. Jane Doe (optional)"
-                value={plusOne}
-                onChange={(e) => setPlusOne(e.target.value)}
-                readOnly={!!token}/>
-            )}
-            <button onClick={() => submitRSVP(true)}>Accept</button>
-            <button onClick={() => submitRSVP(false)}>Decline</button>
-          </div>
-        )}
+          )}
+          <button onClick={() => submitRSVP(true)}>Accept</button>
+          <button onClick={() => submitRSVP(false)}>Decline</button>
+          {showMessage && 
+            <div className="banner">
+              {response.message} <br></br><br></br>
+              <button onClick={() => setShowMessage(false)}>Close</button>
+            </div>} 
+        </div>
+        
       </div>
 
       <h2>Gallery</h2>
@@ -167,16 +176,31 @@ function Invitation() {
         </div>
       </div>
 
-      <h2>Registry</h2>
+      <h2>Honeymoon Fund</h2>
       <div className="registry">
-        <p>
-          Your presence is the greatest gift, but if you'd like to contribute 
-          to our honeymoon fund, you can do so below.
-        </p>
-        <input 
-          placeholder="$"
-          onChange={(e) => setAmount(e.target.value)}/><br></br>
+        <p>Your presence is the greatest gift, but if you'd like to contribute 
+          to our honeymoon fund, you can do so below.</p>
+        <div className="registry-amount">
+          <span className="dollar-sign">$</span>
+          <input className="amount"
+            placeholder="0"
+            onKeyDown={(e) => {
+              if (!/[0-9]/.test(e.key) &&
+                !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => setAmount(e.target.value)}/>
+        </div>
         <button onClick={handleDonation}>Contribute</button>
+        {showSuccess && (
+          <div className="banner">
+            <p>Payment received: ${amount}</p>
+            <p>Thank you for contributing to our honeymoon fund 🤍.</p>
+            <p>- {wedding.groomName} & {wedding.brideName}</p>
+            <button onClick={() => setShowSuccess(false)}>Close</button>
+          </div>
+        )}
       </div>
     </div>
   );
