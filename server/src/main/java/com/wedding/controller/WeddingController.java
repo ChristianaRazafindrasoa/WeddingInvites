@@ -24,20 +24,33 @@ import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
 import com.wedding.model.WeddingInfo;
 
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+
 @RestController
 @RequestMapping("api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
     private final RSVPService rsvpService;
+    private final S3Client s3Client;
+    private final String bucketName;
 
     public WeddingController(
             WeddingInfoRepository infoRepo, 
             RSVPService rsvpService,
-            @Value("${stripe.secret.key}") String stripeApiKey) {
+            @Value("${stripe.secret.key}") String stripeApiKey,
+            @Value("${aws.region}") String region,
+            @Value("${aws.bucket}") String bucketName) {
         this.infoRepo = infoRepo;
         this.rsvpService = rsvpService;
         Stripe.apiKey = stripeApiKey;
+        this.s3Client = S3Client.builder()
+            .region(Region.of(region))
+            .build();
+        this.bucketName = bucketName;
     }
 
     @GetMapping("/info")
@@ -130,5 +143,13 @@ public class WeddingController {
             ));
         }
     }
-}
 
+    @GetMapping("/s3/test")
+    public String test() {
+        ListObjectsV2Response response = s3Client.listObjectsV2(
+                ListObjectsV2Request.builder()
+                        .bucket(bucketName)
+                        .build());
+        return "Found " + response.contents().size() + " files";
+    }    
+}
