@@ -3,13 +3,13 @@ import "./index.css";
 import AdminPanel from "./Admin";
 
 function Invitation() {
-  const photos = ["images/photo1.jpg", "/images/photo2.jpg", "/images/photo3.jpg"];
   const [wedding, setWedding] = useState(null);
   const [mainGuest, setMainGuest] = useState("");
   const [plusOne, setPlusOne] = useState("");
   const [allowPlusOne, setAllowPlusOne] = useState(true);
   const [token, setToken] = useState("");
   const [response, setResponse] = useState(null);
+  const [photos, setPhotos] = useState([]);
   const [amount, setAmount] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -37,6 +37,12 @@ function Invitation() {
         })
         .catch((err) => setResponse({message: "Failed to load RSVP data."}));
     }
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/photo-gallery')
+      .then((res) => res.json())
+      .then((photos) => setPhotos(photos))
   }, []);
 
   const submitRSVP = async (attending) => {
@@ -171,7 +177,7 @@ function Invitation() {
         <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
           {photos.map((photo, index) => (
-            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index} />
+            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index}/>
           ))}
         </div>
       </div>

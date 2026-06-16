@@ -1,5 +1,8 @@
 package com.wedding.controller;
 
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -18,36 +21,41 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
 import com.wedding.domain.RSVPService;
 import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
+import com.wedding.model.Photo;
 import com.wedding.model.WeddingInfo;
 
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
-import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
 @RestController
 @RequestMapping("api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
+    private PhotoRepository photoRepo;
     private final RSVPService rsvpService;
-    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
     private final String bucketName;
 
     public WeddingController(
             WeddingInfoRepository infoRepo, 
+            PhotoRepository photoRepo,
             RSVPService rsvpService,
             @Value("${stripe.secret.key}") String stripeApiKey,
             @Value("${aws.region}") String region,
             @Value("${aws.bucket}") String bucketName) {
         this.infoRepo = infoRepo;
+        this.photoRepo = photoRepo;
         this.rsvpService = rsvpService;
         Stripe.apiKey = stripeApiKey;
-        this.s3Client = S3Client.builder()
+        this.s3Presigner = S3Presigner.builder()
             .region(Region.of(region))
             .build();
         this.bucketName = bucketName;
@@ -144,12 +152,24 @@ public class WeddingController {
         }
     }
 
-    @GetMapping("/s3/test")
-    public String test() {
-        ListObjectsV2Response response = s3Client.listObjectsV2(
-                ListObjectsV2Request.builder()
-                        .bucket(bucketName)
-                        .build());
-        return "Found " + response.contents().size() + " files";
-    }    
+    @GetMapping("/photo-gallery")
+    public List<String> getApprovedPicturesURL() {
+        List<String> urls = new ArrayList<>();
+        for (Photo photo : photoRepo.findByIsApproved(true)) {
+            urls.add(getPresignedURL(photo.getS3Key()));
+        }
+        return urls;
+    }  
+
+    private String getPresignedURL(String s3key){
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(s3key)
+            .build();
+        PresignedGetObjectRequest presignedRequest =
+            s3Presigner.presignGetObject(r -> r
+                .signatureDuration(Duration.ofHours(1))
+                .getObjectRequest(getObjectRequest));
+        return presignedRequest.url().toString();      
+    }
 }
