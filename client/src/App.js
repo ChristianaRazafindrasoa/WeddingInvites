@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./index.css";
 import AdminPanel from "./Admin";
 
@@ -10,10 +10,13 @@ function Invitation() {
   const [token, setToken] = useState("");
   const [photos, setPhotos] = useState([]);
   const [files, setFiles] = useState([]);
+  const fileInputRef = useRef(null);
   const [amount, setAmount] = useState("");
   const [response, setResponse] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/info')
@@ -76,23 +79,28 @@ function Invitation() {
   const handleFileChange = (e) => { setFiles(Array.from(e.target.files)); };
 
   const uploadPhotos = async () => {
-    for (const file of files) {
-      const presignResponse = await fetch(
-        "http://localhost:8080/api/photos/upload",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            fileName: file.name,
-            contentType: file.type
-          })
-        }
-      );
+    if (files.length === 0) {
+      return;
+    }
 
-      const presignData = await presignResponse.json();
-      try {
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const presignResponse = await fetch(
+          "http://localhost:8080/api/photos/upload",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              contentType: file.type
+            })
+          }
+        );
+
+        const presignData = await presignResponse.json();
         const uploadResponse = await fetch(
           presignData.uploadUrl,
           {
@@ -103,9 +111,11 @@ function Invitation() {
             body: file
           }
         );
+
         if (!uploadResponse.ok) {
           throw new Error("Upload failed");
         }
+
         await fetch(
           "http://localhost:8080/api/photos/save",
           {
@@ -118,10 +128,15 @@ function Invitation() {
             })
           }
         );
-        } catch (err) {
-          console.error(err);
-        }
+      }
+      setResponse({ message: `Upload succeded. Photos are under review.
+        Please check back again later.` });
+    } catch {
+      setResponse({ message: "Upload failed. Please try again later." });
     }
+    setUploading(false);
+    setShowUpload(true);
+    setFiles([]);
   };
 
   const handleDonation = async () => {
@@ -139,7 +154,6 @@ function Invitation() {
         name: mainGuest
       })
     });
-    
     const session = await response.json();
     window.location.href = session.url;
   }
@@ -213,7 +227,7 @@ function Invitation() {
           <button onClick={() => submitRSVP(false)}>Decline</button>
           {showMessage && 
             <div className="banner">
-              {response.message} <br></br>
+              {response.message} 🤍 <br></br>
               <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
               <button onClick={() => setShowMessage(false)}>Close</button>
             </div>} 
@@ -229,16 +243,37 @@ function Invitation() {
           ))}
         </div>
         <input
+          id="file-input"
+          ref={fileInputRef}
+          className="file-input"
           type="file"
           multiple
           accept="image/*"
           onChange={handleFileChange}/>
+        <label htmlFor="file-input" className="upload-btn">Choose Files</label>
           {files.length > 0 && (
             <div>
               <p>{files.length} photo(s) selected</p>
-              <button onClick={uploadPhotos}>Upload</button>
+              <button className="upload-btn" onClick={uploadPhotos} disabled={uploading}>
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
             </div>
           )}
+          {showUpload && 
+            <div className="banner">
+              {response.message} 🤍 <br></br>
+              <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
+              <button onClick={() => { 
+                  setShowUpload(false);
+                  setFiles([]);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }}
+                >
+                  Close
+                </button>
+            </div>} 
       </div>
 
       <h2>Honeymoon Fund</h2>

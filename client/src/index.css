@@ -142,7 +142,10 @@ p {
 
 .rsvp-form button,
 .registry button,
-.success button {
+.success button,
+.upload-btn,
+.banner button {
+  display: inline-block;
   border: none;
   border-radius: 999px;
   padding: 14px 28px;
@@ -158,9 +161,15 @@ p {
 
 .rsvp-form button:hover,
 .registry button:hover,
-.success button:hover {
+.success button:hover,
+.upload-btn:hover,
+.banner button:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(0,0,0,.35);
+}
+
+.file-input {
+  display: none;
 }
 
 .gallery {
@@ -168,6 +177,7 @@ p {
   overflow-x: auto;
   gap: 16px;
   padding: 8px;
+  margin-bottom: 30px;
 }
 
 .gallery::-webkit-scrollbar {
@@ -237,12 +247,14 @@ p {
   width: 90%;
   max-width: 500px;
   padding: 36px;
-  background: rgba(11,29,57,0.96);
+  background: var(--blue);
   border-radius: 30px;
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 2px solid var(--pink);
   color: var(--white);
   text-align: center;
-  box-shadow: 0 25px 60px rgba(0,0,0,.45);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.6),
+    0 0 0 100vmax rgba(11,29,57,0.82);
   z-index: 9999;
   animation: popIn .4s ease;
 }
