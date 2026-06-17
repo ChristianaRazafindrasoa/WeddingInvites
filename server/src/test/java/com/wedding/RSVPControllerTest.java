@@ -27,7 +27,6 @@ class RSVPControllerTest {
                 "\"plusOneName\":\"Bar Test\"," +
                 "\"isAccepted\":true" +
                 "}";
-
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
@@ -48,12 +47,10 @@ class RSVPControllerTest {
                 "\"plusOneName\":\"Bar Test\"," +
                 "\"isAccepted\":true" +
                 "}";
-
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isOk());
-
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
@@ -70,7 +67,6 @@ class RSVPControllerTest {
                 "\"plusOneName\":\"Bar Test\"," +
                 "\"isAccepted\":true" +
                 "}";
-
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
