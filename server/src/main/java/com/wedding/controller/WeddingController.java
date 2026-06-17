@@ -1,10 +1,11 @@
 package com.wedding.controller;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -28,11 +28,13 @@ import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
 import com.wedding.model.Photo;
 import com.wedding.model.WeddingInfo;
-
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @RestController
 @RequestMapping("api")
@@ -108,7 +110,6 @@ public class WeddingController {
         if (amountValue <= 0) {
             throw new IllegalStateException("Minimum donation amount is $1");
         }
-
         String successUrl = "http://localhost:3000/honeymoon-fund?token=" +
             payload.get("token") + "&success=true&id={CHECKOUT_SESSION_ID}";
         SessionCreateParams params = SessionCreateParams.builder()
@@ -171,5 +172,44 @@ public class WeddingController {
                 .signatureDuration(Duration.ofHours(1))
                 .getObjectRequest(getObjectRequest));
         return presignedRequest.url().toString();      
+    }
+
+    @PostMapping("/photos/upload")
+    public ResponseEntity<Map<String, String>> putPresignedURL(
+            @RequestBody Map<String, String> body) {
+        String contentType = body.get("contentType");
+        String fileName = body.get("fileName");
+        String key = UUID.randomUUID() + fileName;
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .contentType(contentType)
+            .build();
+        PutObjectPresignRequest presignRequest =
+            PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(putObjectRequest)
+                .build();
+        PresignedPutObjectRequest presignedRequest =
+            s3Presigner.presignPutObject(presignRequest);
+        return ResponseEntity.ok(Map.of(
+            "uploadUrl", presignedRequest.url().toString(),
+            "s3Key", key
+        ));
+    }
+
+    @PostMapping("/photos/save")
+    public ResponseEntity<?> savePhoto(
+            @RequestBody Map<String, String> body) {
+        String s3Key = body.get("s3Key");
+        Photo photo = new Photo(
+            s3Key,
+            LocalDateTime.now(),
+            false
+        );
+        photoRepo.save(photo);
+        return ResponseEntity.ok(
+            Map.of("message", "Photo saved successfully")
+        );
     }
 }

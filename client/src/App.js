@@ -8,9 +8,10 @@ function Invitation() {
   const [plusOne, setPlusOne] = useState("");
   const [allowPlusOne, setAllowPlusOne] = useState(true);
   const [token, setToken] = useState("");
-  const [response, setResponse] = useState(null);
   const [photos, setPhotos] = useState([]);
+  const [files, setFiles] = useState([]);
   const [amount, setAmount] = useState("");
+  const [response, setResponse] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
 
@@ -38,13 +39,7 @@ function Invitation() {
         .catch((err) => setResponse({message: "Failed to load RSVP data."}));
     }
   }, []);
-
-  useEffect(() => {
-    fetch('http://localhost:8080/api/photo-gallery')
-      .then((res) => res.json())
-      .then((photos) => setPhotos(photos))
-  }, []);
-
+  
   const submitRSVP = async (attending) => {
     try {
       const confirmed = window.confirm(
@@ -69,6 +64,63 @@ function Invitation() {
       setShowMessage(true);
     } catch (err) {
       setResponse({ message: "RSVP failed. Please try again later." });
+    }
+  };
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/photo-gallery')
+      .then((res) => res.json())
+      .then((photos) => setPhotos(photos))
+  }, []);
+
+  const handleFileChange = (e) => { setFiles(Array.from(e.target.files)); };
+
+  const uploadPhotos = async () => {
+    for (const file of files) {
+      const presignResponse = await fetch(
+        "http://localhost:8080/api/photos/upload",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentType: file.type
+          })
+        }
+      );
+
+      const presignData = await presignResponse.json();
+      try {
+        const uploadResponse = await fetch(
+          presignData.uploadUrl,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": file.type
+            },
+            body: file
+          }
+        );
+        if (!uploadResponse.ok) {
+          throw new Error("Upload failed");
+        }
+        await fetch(
+          "http://localhost:8080/api/photos/save",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              s3Key: presignData.s3Key
+            })
+          }
+        );
+        } catch (err) {
+          console.error(err);
+        }
     }
   };
 
@@ -104,12 +156,8 @@ function Invitation() {
         }
         return res.json();
       })
-      .then(data => {
-        setAmount(data.amount);
-      })
-      .catch(err => {
-        console.error(err);
-      });
+      .then(data => { setAmount(data.amount); })
+      .catch(err => { console.error(err); });
     }
   }, []);
 
@@ -165,11 +213,11 @@ function Invitation() {
           <button onClick={() => submitRSVP(false)}>Decline</button>
           {showMessage && 
             <div className="banner">
-              {response.message} <br></br><br></br>
+              {response.message} <br></br>
+              <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
               <button onClick={() => setShowMessage(false)}>Close</button>
             </div>} 
         </div>
-        
       </div>
 
       <h2>Gallery</h2>
@@ -177,9 +225,20 @@ function Invitation() {
         <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
           {photos.map((photo, index) => (
-            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index}/>
+            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index} />
           ))}
         </div>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileChange}/>
+          {files.length > 0 && (
+            <div>
+              <p>{files.length} photo(s) selected</p>
+              <button onClick={uploadPhotos}>Upload</button>
+            </div>
+          )}
       </div>
 
       <h2>Honeymoon Fund</h2>
