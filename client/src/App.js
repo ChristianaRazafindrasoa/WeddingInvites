@@ -187,13 +187,13 @@ function Invitation() {
     <div className="container">
       <div className="hero">
         <div className="hero-overlay">
-          <p>The wedding of</p>
+          <h3>The wedding of</h3>
           <h1>{wedding.groomName} & {wedding.brideName}</h1>
-          <p>{new Date("2026-12-12").toLocaleDateString("en-US", 
-            {weekday: "long", month: "long", day: "numeric", year: "numeric"})
+          <h3>{new Date(wedding.weddingDate).toLocaleDateString("en-US", 
+            {timeZone: "PST", weekday: "long", month: "long", day: "numeric", year: "numeric"})
             .replace(",", " •")
-            .replace(",", " •")}</p>       
-          <p>{wedding.city}</p>
+            .replace(",", " •")}</h3>       
+          <h3>{wedding.city}</h3>
         </div>
       </div>      
 

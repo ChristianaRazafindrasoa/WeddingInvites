@@ -1,18 +1,18 @@
-DROP DATABASE IF EXISTS wedding_db;
-CREATE DATABASE wedding_db;
-USE wedding_db;
+DROP DATABASE IF EXISTS wedding_db_prod;
+CREATE DATABASE wedding_db_prod;
+USE wedding_db_prod;
 
 CREATE TABLE wedding_info (
     wedding_id INT AUTO_INCREMENT PRIMARY KEY,
     groom_name VARCHAR(255) NOT NULL,
     bride_name VARCHAR(255) NOT NULL,
     city VARCHAR(255) NOT NULL,
-    `date` DATE NOT NULL
+    `date` DATETIME NOT NULL
 );
 
 CREATE TABLE wedding_event (
 	event_id INT AUTO_INCREMENT PRIMARY KEY,
-    wedding_id INT NOT NULL,
+    wedding_id INT DEFAULT 1,
     `name` VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL,
     address VARCHAR(255),
@@ -23,7 +23,7 @@ CREATE TABLE wedding_event (
 
 CREATE TABLE guest (
     guest_id INT AUTO_INCREMENT PRIMARY KEY,
-    wedding_id INT NOT NULL,
+    wedding_id INT DEFAULT 1,
     `name` VARCHAR(255) NOT NULL,
     phone VARCHAR(255),
     has_plus_one BOOLEAN,
@@ -34,8 +34,8 @@ CREATE TABLE guest (
 
 CREATE TABLE rsvp (
     rsvp_id INT AUTO_INCREMENT PRIMARY KEY,
-    token VARCHAR(6) NOT NULL UNIQUE,
-    wedding_id INT NOT NULL,
+    token VARCHAR(50) NOT NULL UNIQUE,
+    wedding_id INT DEFAULT 1,
     main_guest_id INT NOT NULL,
     plus_one_id INT,
     responded_at DATETIME,
@@ -48,18 +48,13 @@ CREATE TABLE rsvp (
         REFERENCES guest(guest_id)
 );
 
-INSERT INTO wedding_info (groom_name, bride_name, city, `date`) VALUES
-	('Nicholas', 'Christiana', 'Tampa, Florida', '2026-12-12');
-    
-INSERT INTO wedding_event (wedding_id, `name`, location, address, start_time) VALUES
-	(1, 'Ceremony', 'Amazing Church', '123 Mary Dr, Tampa', '2026-12-12-08-15-00'),
-	(1, 'Dinner', 'Awesome Restaurant', '456 Mall Dr, Tampa', '2026-12-12-09-30-00');
-
-INSERT INTO guest (wedding_id, `name`, phone, has_plus_one, is_attending) VALUES
-	(1, 'Foo Test', '1234567890', true, false),
-    (1, 'Bar Test', null, false, false),
-    (1, 'Test McTest', '9876543210', false, false);
-    
-INSERT INTO rsvp (token, wedding_id, main_guest_id, plus_one_id, responded_at, is_accepted) VALUES
-	('abc123', 1, 1, 2, null, false),
-    ('123abc', 1, 3, null, null, false);   
+CREATE TABLE photo (
+	photo_id INT AUTO_INCREMENT PRIMARY KEY,
+    wedding_id INT DEFAULT 1,
+    s3_key VARCHAR(50) NOT NULL UNIQUE,
+    uploaded_at DATETIME NOT NULL,
+    uploaded_by VARCHAR(255) NOT NULL,
+    is_approved BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (wedding_id)
+        REFERENCES wedding_info(wedding_id)
+);

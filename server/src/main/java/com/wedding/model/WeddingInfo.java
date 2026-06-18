@@ -1,6 +1,6 @@
 package com.wedding.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -24,7 +24,7 @@ public class WeddingInfo {
     @Column(name = "bride_name")
     private String brideName;
     @Column(name = "date")
-    private LocalDate weddingDate;
+    private LocalDateTime weddingDate;
     @Column(name = "city")
     private String city;
     @OneToMany
@@ -34,7 +34,7 @@ public class WeddingInfo {
     public WeddingInfo() {
     }
 
-    public WeddingInfo(String groomName, String brideName, LocalDate weddingDate, String city, List<WeddingEvent> events) {
+    public WeddingInfo(String groomName, String brideName, LocalDateTime weddingDate, String city, List<WeddingEvent> events) {
         this.groomName = groomName;
         this.brideName = brideName;
         this.weddingDate = weddingDate;
@@ -54,7 +54,7 @@ public class WeddingInfo {
         return brideName;
     }
 
-    public LocalDate getWeddingDate() {
+    public LocalDateTime getWeddingDate() {
         return weddingDate;
     }
 

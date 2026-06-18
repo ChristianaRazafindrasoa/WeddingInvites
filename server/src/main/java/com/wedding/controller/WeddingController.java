@@ -183,7 +183,7 @@ public class WeddingController {
             @RequestBody Map<String, String> body) {
         String contentType = body.get("contentType");
         String fileName = body.get("fileName");
-        String key = UUID.randomUUID() + fileName;
+        String key = "test/" + UUID.randomUUID() + fileName;
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(key)
