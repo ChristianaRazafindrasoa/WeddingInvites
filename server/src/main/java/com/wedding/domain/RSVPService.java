@@ -65,7 +65,7 @@ public class RSVPService {
             saved.getMainGuest().getFullName(),
             saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
             saved.getMainGuest().hasPlusOne(),
-            request.isAccepted() ? "Thank you for attending." : "Thank you, we'll miss you."
+            request.isAccepted() ? "Thank you for attending. 🤍" : "Thank you, we'll miss you. 🤍"
         );
     }
 }
