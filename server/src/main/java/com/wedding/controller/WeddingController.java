@@ -3,6 +3,7 @@ package com.wedding.controller;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -154,12 +155,15 @@ public class WeddingController {
     }
 
     @GetMapping("/photo-gallery")
-    public List<String> getApprovedPicturesURL() {
-        List<String> urls = new ArrayList<>();
+    public List<Map<String, String>> getApprovedPicturesURL() {
+        List<Map<String, String>> response = new ArrayList<>();
         for (Photo photo : photoRepo.findByIsApproved(true)) {
-            urls.add(getPresignedURL(photo.getS3Key()));
+            Map<String, String> item = new HashMap<>();
+            item.put("url", getPresignedURL(photo.getS3Key()));
+            item.put("uploadedBy", photo.getUploadedBy());
+            response.add(item);
         }
-        return urls;
+        return response;
     }  
 
     private String getPresignedURL(String s3key){
@@ -199,13 +203,22 @@ public class WeddingController {
     }
 
     @PostMapping("/photos/save")
-    public ResponseEntity<?> savePhoto(
+    public ResponseEntity<Map<String, String>> savePhoto(
             @RequestBody Map<String, String> body) {
         String s3Key = body.get("s3Key");
+        String token = body.get("token");
+        RSVPResponse response = rsvpService.findByToken(token);
+        String plusOne = response.plusOneName();
+        String credits = response.mainGuestName();
+        if (plusOne != null) {
+            credits = response.mainGuestName().split(" ")[0];
+            credits += " & " + plusOne;
+        }
         Photo photo = new Photo(
             s3Key,
             LocalDateTime.now(),
-            false
+            credits,
+            true
         );
         photoRepo.save(photo);
         return ResponseEntity.ok(

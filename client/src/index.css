@@ -191,7 +191,7 @@ p {
 
 .gallery-img {
   width: 260px;
-  height: 340px;
+  height: auto;
   object-fit: cover;
   border-radius: 28px;
   flex-shrink: 0;

@@ -20,14 +20,17 @@ public class Photo {
     private String s3Key;
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
+    @Column(name = "uploaded_by")
+    private String uploadedBy;
     @Column(name = "is_approved")
     private boolean isApproved;
 
     public Photo(){}
 
-    public Photo(String s3Key, LocalDateTime uploadedAt, boolean isApproved) {
+    public Photo(String s3Key, LocalDateTime uploadedAt, String uploadedBy, boolean isApproved) {
         this.s3Key = s3Key;
         this.uploadedAt = uploadedAt;
+        this.uploadedBy = uploadedBy;
         this.isApproved = isApproved;
     }
 
@@ -41,6 +44,14 @@ public class Photo {
 
     public LocalDateTime getUploadedAt() {
         return uploadedAt;
+    }
+
+    public String getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(String uploadedBy) {
+        this.uploadedBy = uploadedBy;
     }
 
     public boolean isApproved() {

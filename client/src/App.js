@@ -79,60 +79,64 @@ function Invitation() {
   const handleFileChange = (e) => { setFiles(Array.from(e.target.files)); };
 
   const uploadPhotos = async () => {
-    if (files.length === 0) {
-      return;
-    }
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken && files.length <= 5) {
+      setUploading(true);
+      try {
+        for (const file of files) {
+          const presignResponse = await fetch(
+            "http://localhost:8080/api/photos/upload",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                fileName: file.name,
+                contentType: file.type
+              })
+            }
+          );
 
-    setUploading(true);
-    try {
-      for (const file of files) {
-        const presignResponse = await fetch(
-          "http://localhost:8080/api/photos/upload",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              fileName: file.name,
-              contentType: file.type
-            })
+          const presignData = await presignResponse.json();
+          const uploadResponse = await fetch(
+            presignData.uploadUrl,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": file.type
+              },
+              body: file
+            }
+          );
+
+          if (!uploadResponse.ok) {
+            throw new Error("Upload failed");
           }
-        );
 
-        const presignData = await presignResponse.json();
-        const uploadResponse = await fetch(
-          presignData.uploadUrl,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": file.type
-            },
-            body: file
-          }
-        );
-
-        if (!uploadResponse.ok) {
-          throw new Error("Upload failed");
+          await fetch(
+            "http://localhost:8080/api/photos/save",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                s3Key: presignData.s3Key,
+                token: urlToken
+              })
+            }
+          );
         }
-
-        await fetch(
-          "http://localhost:8080/api/photos/save",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              s3Key: presignData.s3Key
-            })
-          }
-        );
+        setResponse({ message: "Upload succeded. Please refresh the browser."});
+      } catch {
+        setResponse({ message: "Upload failed. Please try again later." });
       }
-      setResponse({ message: `Upload succeded. Photos are under review.
-        Please check back again later.` });
-    } catch {
-      setResponse({ message: "Upload failed. Please try again later." });
+    } else if (!urlToken) {
+      setResponse({ message: "You must be an invited guest to upload photos." });
+    } else {
+      setResponse({ message: "Please upload up to 5 photos at a time." });
     }
     setUploading(false);
     setShowUpload(true);
@@ -227,7 +231,7 @@ function Invitation() {
           <button onClick={() => submitRSVP(false)}>Decline</button>
           {showMessage && 
             <div className="banner">
-              {response.message} 🤍 <br></br>
+              {response.message} <br></br>
               <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
               <button onClick={() => setShowMessage(false)}>Close</button>
             </div>} 
@@ -239,7 +243,12 @@ function Invitation() {
         <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
           {photos.map((photo, index) => (
-            <img src={photo} alt={`${index + 1}`} className="gallery-img" key={index} />
+            <img 
+              src={photo.url} 
+              alt={`${index + 1}`} 
+              className="gallery-img" 
+              title={`By ${photo.uploadedBy}`}
+            />
           ))}
         </div>
         <input
@@ -250,7 +259,7 @@ function Invitation() {
           multiple
           accept="image/*"
           onChange={handleFileChange}/>
-        <label htmlFor="file-input" className="upload-btn">Choose Files</label>
+        <label htmlFor="file-input" className="upload-btn">Choose Photos</label>
           {files.length > 0 && (
             <div>
               <p>{files.length} photo(s) selected</p>
@@ -261,7 +270,7 @@ function Invitation() {
           )}
           {showUpload && 
             <div className="banner">
-              {response.message} 🤍 <br></br>
+              {response.message} <br></br>
               <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
               <button onClick={() => { 
                   setShowUpload(false);
@@ -269,10 +278,7 @@ function Invitation() {
                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";
                   }
-                }}
-                >
-                  Close
-                </button>
+                }}>Close</button>
             </div>} 
       </div>
 
@@ -296,7 +302,7 @@ function Invitation() {
         {showSuccess && (
           <div className="banner">
             <p>Payment received: ${amount}</p>
-            <p>Thank you for contributing to our honeymoon fund 🤍.</p>
+            <p>Thank you for contributing to our honeymoon fund.</p>
             <p>- {wedding.groomName} & {wedding.brideName}</p>
             <button onClick={() => setShowSuccess(false)}>Close</button>
           </div>
