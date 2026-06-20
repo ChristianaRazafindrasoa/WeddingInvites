@@ -19,7 +19,7 @@ function Invitation() {
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/info')
+    fetch("/api/info")
       .then((res) => res.json())
       .then((data) => setWedding(data));
 
@@ -27,7 +27,7 @@ function Invitation() {
     const urlToken = params.get("token");
     if (urlToken) {
       setToken(urlToken);
-      fetch(`http://localhost:8080/api/rsvp?token=${encodeURIComponent(urlToken)}`)
+      fetch(`/api/rsvp?token=${encodeURIComponent(urlToken)}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("Token not found");
@@ -51,7 +51,7 @@ function Invitation() {
       if (!confirmed) {
         return;
       }
-      const response = await fetch('http://localhost:8080/api/rsvp', {
+      const response = await fetch("/api/rsvp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,7 +71,7 @@ function Invitation() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/photo-gallery")
+    fetch("/api/photo-gallery")
       .then((res) => res.json())
       .then((photos) => setPhotos(photos))
   }, []);
@@ -95,7 +95,7 @@ function Invitation() {
     try {
       for (const file of files) {
         const presignResponse = await fetch(
-          "http://localhost:8080/api/photos/upload",
+          "/api/photos/upload",
           {
             method: "POST",
             headers: {
@@ -124,7 +124,7 @@ function Invitation() {
         }
 
         await fetch(
-          "http://localhost:8080/api/photos/save",
+          "/api/photos/save",
           {
             method: "POST",
             headers: {
@@ -154,7 +154,7 @@ function Invitation() {
     if (amount <= 0) {
       return;
     }
-    const response = await fetch("http://localhost:8080/api/honeymoon-fund", {
+    const response = await fetch("/api/honeymoon-fund", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +175,7 @@ function Invitation() {
       setShowSuccess(true);
       const sessionId = params.get("id");
       const token = params.get("token");
-      fetch(`http://localhost:8080/api/checkout-session/${sessionId}`)
+      fetch(`/api/checkout-session/${sessionId}`)
       .then(res => {
         if (!res.ok) {
           throw new Error("Failed to retrieve session");

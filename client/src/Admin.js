@@ -15,11 +15,11 @@ export default function AdminPanel() {
     setError(null);
 
     Promise.all([
-      fetch("http://localhost:8080/api/admin/guests").then((res) => {
+      fetch("/api/admin/guests").then((res) => {
         if (!res.ok) throw new Error("Failed to load guests");
         return res.json();
       }),
-      fetch("http://localhost:8080/api/admin/rsvps").then((res) => {
+      fetch("/api/admin/rsvps").then((res) => {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),
