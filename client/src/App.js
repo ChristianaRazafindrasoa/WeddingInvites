@@ -81,66 +81,74 @@ function Invitation() {
   const uploadPhotos = async () => {
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
-    if (urlToken && files.length <= 5) {
-      setUploading(true);
-      try {
-        for (const file of files) {
-          const presignResponse = await fetch(
-            "http://localhost:8080/api/photos/upload",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                fileName: file.name,
-                contentType: file.type
-              })
-            }
-          );
-
-          const presignData = await presignResponse.json();
-          const uploadResponse = await fetch(
-            presignData.uploadUrl,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": file.type
-              },
-              body: file
-            }
-          );
-          if (!uploadResponse.ok) {
-            throw new Error("Upload failed");
-          }
-
-          await fetch(
-            "http://localhost:8080/api/photos/save",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                s3Key: presignData.s3Key,
-                token: urlToken
-              })
-            }
-          );
-        }
-        setResponse({ message: "Upload succeeded. Please refresh the browser. 🤍"});
-      } catch {
-        setResponse({ message: "Upload failed. Please try again later. 🤍" });
-      }
-    } else if (!urlToken) {
-      setResponse({ message: "You must be an invited guest to upload photos." });
-    } else {
-      setResponse({ message: "Please upload up to 5 photos at a time." });
+    if (!urlToken) {
+      setResponse({ message: "You must be an invited guest to upload photos."});
+      clearUpload();
+      return;
     }
+    if (files.length > 5) {
+      setResponse({ message: "Please upload up to 5 photos at a time."});
+      clearUpload();
+      return;
+    }
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const presignResponse = await fetch(
+          "http://localhost:8080/api/photos/upload",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              fileName: file.name,
+              contentType: file.type
+            })
+          }
+        );
+
+        const presignData = await presignResponse.json();
+        const uploadResponse = await fetch(
+          presignData.uploadUrl,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": file.type
+            },
+            body: file
+          }
+        );
+        if (!uploadResponse.ok) {
+          throw new Error("Upload failed");
+        }
+
+        await fetch(
+          "http://localhost:8080/api/photos/save",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              s3Key: presignData.s3Key,
+              token: urlToken
+            })
+          }
+        );
+      }
+      setResponse({ message: "Upload succeeded. Please refresh the browser. 🤍"});
+    } catch {
+      setResponse({ message: "Upload failed. Please try again later." });
+    }
+    clearUpload();
+  };
+
+  const clearUpload = () => {
     setUploading(false);
     setShowUpload(true);
     setFiles([]);
-  };
+  }
 
   const handleDonation = async () => {
     if (amount <= 0) {
