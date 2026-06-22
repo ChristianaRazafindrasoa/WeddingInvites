@@ -5,3 +5,7 @@ spring.datasource.driver-class-name=
 stripe.secret.key=
 aws.region=
 aws.bucket=
+app.base-url=
+admin.password=
+admin.jwt.secret=<at-least-32-characters>
+admin.jwt.expiry-hours=

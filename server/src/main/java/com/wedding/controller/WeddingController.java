@@ -46,14 +46,16 @@ public class WeddingController {
     private final RSVPService rsvpService;
     private final S3Presigner s3Presigner;
     private final String bucketName;
+    private final String baseUrl;
 
     public WeddingController(
-            WeddingInfoRepository infoRepo, 
+            WeddingInfoRepository infoRepo,
             PhotoRepository photoRepo,
             RSVPService rsvpService,
             @Value("${stripe.secret.key}") String stripeApiKey,
             @Value("${aws.region}") String region,
-            @Value("${aws.bucket}") String bucketName) {
+            @Value("${aws.bucket}") String bucketName,
+            @Value("${app.base-url}") String baseUrl) {
         this.infoRepo = infoRepo;
         this.photoRepo = photoRepo;
         this.rsvpService = rsvpService;
@@ -62,6 +64,7 @@ public class WeddingController {
             .region(Region.of(region))
             .build();
         this.bucketName = bucketName;
+        this.baseUrl = baseUrl;
     }
 
     @GetMapping("/info")
@@ -111,7 +114,7 @@ public class WeddingController {
         if (amountValue <= 0) {
             throw new IllegalStateException("Minimum donation amount is $1");
         }
-        String successUrl = "http://3.80.113.81:8080/?token=" +
+        String successUrl = baseUrl + "/?token=" +
             payload.get("token") + "&success=true&id={CHECKOUT_SESSION_ID}";
         SessionCreateParams params = SessionCreateParams.builder()
             .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -207,22 +210,18 @@ public class WeddingController {
             @RequestBody Map<String, String> body) {
         String s3Key = body.get("s3Key");
         String token = body.get("token");
-        RSVPResponse response = rsvpService.findByToken(token);
-        String plusOne = response.plusOneName();
-        String credits = response.mainGuestName();
-        if (plusOne != null) {
-            credits = response.mainGuestName().split(" ")[0];
-            credits += " & " + plusOne;
+        String uploadedBy = null;
+        if (token != null) {
+            RSVPResponse response = rsvpService.findByToken(token);
+            String plusOne = response.plusOneName();
+            uploadedBy = response.mainGuestName();
+            if (plusOne != null) {
+                uploadedBy = response.mainGuestName().split(" ")[0];
+                uploadedBy += " & " + plusOne;
+            }
         }
-        Photo photo = new Photo(
-            s3Key,
-            LocalDateTime.now(),
-            credits,
-            true
-        );
+        Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, false);
         photoRepo.save(photo);
-        return ResponseEntity.ok(
-            Map.of("message", "Photo saved successfully")
-        );
+        return ResponseEntity.ok(Map.of("message", "Photo saved successfully"));
     }
 }
