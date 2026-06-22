@@ -197,14 +197,14 @@ function Invitation() {
       <div className="hero">
         <div className="hero-overlay">
           <h3>The wedding of</h3>
-          <h1>{wedding.groomName} & {wedding.brideName}</h1>
+          <h1>{wedding.groomName}<br />&<br />{wedding.brideName}</h1>
           <h3>{new Date(wedding.weddingDate).toLocaleDateString("en-US", 
             {weekday: "long", month: "long", day: "numeric", year: "numeric"})
             .replace(",", " •")
             .replace(",", " •")}</h3>       
           <h3>{wedding.city}</h3>
         </div>
-      </div>      
+      </div>
 
       <h2>Events</h2>
       <ul className="event-list">
@@ -215,7 +215,7 @@ function Invitation() {
             <div>{event.address}</div>
             <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
-                minute: "2-digit"})}</div><br />
+                minute: "2-digit"})}</div>
           </li>
         ))}
       </ul>

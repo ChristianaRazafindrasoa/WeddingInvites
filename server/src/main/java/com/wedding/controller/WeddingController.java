@@ -39,7 +39,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 @RestController
 @RequestMapping("api")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://3.80.113.81:8080"})
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
     private PhotoRepository photoRepo;
@@ -111,7 +111,7 @@ public class WeddingController {
         if (amountValue <= 0) {
             throw new IllegalStateException("Minimum donation amount is $1");
         }
-        String successUrl = "http://localhost:3000/honeymoon-fund?token=" +
+        String successUrl = "http://3.80.113.81:8080/?token=" +
             payload.get("token") + "&success=true&id={CHECKOUT_SESSION_ID}";
         SessionCreateParams params = SessionCreateParams.builder()
             .setMode(SessionCreateParams.Mode.PAYMENT)

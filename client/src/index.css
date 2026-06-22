@@ -29,7 +29,7 @@ body {
 .hero {
   position: relative;
   width: 100%;
-  height: 92vh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -50,10 +50,34 @@ body {
 }
 
 .hero-overlay h1 {
-  font-size: clamp(3rem, 6vw, 6rem);
+  font-size: clamp(2.4rem, 6vw, 6rem);
   font-weight: 500;
   letter-spacing: 6px;
   color: var(--pink);
+}
+
+.hero-overlay h3:first-of-type {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 8px 0;
+  color: var(--white);
+}
+
+.hero-overlay h3:nth-of-type(2) {
+  font-size: clamp(0.95rem, 2.3vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 6px 0;
+  color: var(--white);
+}
+
+.hero-overlay h3:nth-of-type(3) {
+  font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 6px 0;
+  color: var(--white);
 }
 
 .container {
@@ -65,11 +89,18 @@ body {
 }
 
 h2 {
-  margin-top: 300px;
-  margin-bottom: 55px;
+  margin-bottom: 20px;
   font-size: clamp(2rem, 7vw, 3rem);
   font-weight: 500;
   color: var(--white);
+}
+
+.container > h2:first-of-type {
+  margin-top: 80px;
+}
+
+.container > h2:not(:first-of-type) {
+  margin-top: 320px;
 }
 
 h2::after {
@@ -88,15 +119,22 @@ p {
 
 .event-list {
   list-style: none;
-  font-size: larger;
   padding: 0;
   margin: 0;
 }
 
 .event-list li {
-  padding: 14px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(14px);
+  padding: 22px 0;
+  line-height: 2;
+}
+
+.event-list li strong {
+  font-size: 1.25rem;
+}
+
+.event-list li div {
+  font-size: 1.25rem;
+  line-height: 1.6;
 }
 
 .rsvp-form {
@@ -109,16 +147,17 @@ p {
 
 .name,
 .rsvp-form input {
-  width: 100%;
+  width: 80%;
+  display: block;
+  margin: 0 auto 20px;
   padding: 14px 20px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.15);
   background: rgba(255,255,255,0.06);
   color: var(--white);
   font-family: "Playfair Display", serif;
-  font-size: 1rem;
+  font-size: 1.2rem;
   transition: all .3s ease;
-  margin-bottom: 20px;
 }
 
 .name::placeholder,
@@ -148,7 +187,7 @@ p {
   background: var(--pink);
   color: var(--blue);
   font-family: "Playfair Display", serif;
-  font-size: 15px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all .3s ease;
@@ -201,7 +240,7 @@ p {
 .registry {
   max-width: 500px;
   margin: auto;
-  margin-bottom: 200px;
+  margin-bottom: 160px;
 }
 
 .registry-amount {
@@ -329,33 +368,143 @@ p {
 
 @media (max-width: 768px) {
   .hero {
-    height: 80vh;
+    height: 100vh;
   }
 
-  h1 {
-    font-size: 3.2rem;
-    letter-spacing: 2px;
+  body {
+    font-size: 1.1rem;
   }
 
-  .gallery-img {
-    width: 220px;
-    height: 290px;
+  .hero-overlay {
+    width: 100%;
+    padding: 10px 8px;
   }
 
-  .registry-amount {
-    width: 95px;
-    height: 95px;
+  .hero-overlay h1 {
+    font-size: 5.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
   }
 
-  .amount {
-    font-size: 1.2rem;
+  .hero-overlay h3:first-of-type {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 8px 0;
   }
 
-  .dollar-sign {
+  .hero-overlay h3:not(:first-of-type) {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 4px 0;
+  }
+
+  h2 {
+    margin-bottom: 20px;
+    font-size: clamp(2.2rem, 8vw, 3rem);
+  }
+
+  .container > h2:first-of-type {
+    margin-top: 56px;
+  }
+
+  .container > h2:not(:first-of-type) {
+    margin-top: 160px;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .event-list li {
+    font-size: 1.3rem;
+  }
+
+  .container {
+    padding: 0 16px 60px;
+  }
+
+  .rsvp-form {
+    max-width: 100%;
+  }
+
+  .name,
+  .rsvp-form input {
+    padding: 10px 14px;
+    font-size: 1.1rem;
+  }
+
+  .rsvp-form button {
+    display: inline-block;
+    width: calc(50% - 8px);
+    margin: 0 4px;
+    padding: 16px;
     font-size: 1rem;
   }
 
+  .registry {
+    max-width: 100%;
+    margin-bottom: 60px;
+  }
+
+  .registry-amount {
+    width: 110px;
+    height: 110px;
+  }
+
+  .amount {
+    font-size: 1.3rem;
+  }
+
+  .dollar-sign {
+    font-size: 1.1rem;
+  }
+
+  .gallery-img {
+    width: 200px;
+    height: 260px;
+  }
+
   .banner {
-    padding: 28px;
+    padding: 28px 20px;
+    width: 92%;
+  }
+
+  .banner button {
+    display: block;
+    width: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-overlay h1 {
+    font-size: 3.6rem;
+    letter-spacing: 1px;
+  }
+
+  .hero-overlay h3 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .name,
+  .rsvp-form input {
+    padding: 10px 14px;
+    font-size: 1rem;
+  }
+
+  .upload-btn {
+    display: inline-block;
+    width: auto;
+    margin: 0 0 10px;
+    text-align: center;
+    padding: 14px 28px;
+    font-size: 1rem;
   }
 }
