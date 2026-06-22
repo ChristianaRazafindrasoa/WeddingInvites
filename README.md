@@ -1,32 +1,47 @@
-# Wedding Website
+# 💍 Wedding Website
 
-A full-stack wedding invitation web app. Guests look up their invitation by phone number, submit RSVPs, contribute to a honeymoon fund, and upload photos to a shared gallery. A password-protected admin panel lets the couple manage guest lists, view RSVPs, and approve photos.
+A full-stack wedding invitation web app built for my own wedding. 🤍
 
-## Tech Stack
+Guests look up their invitation by token, submit their RSVP,  upload photos to a shared gallery, and contribute to a honeymoon fund. A password-protected admin panel lets the couple manage the guest list, and view RSVPs. 
 
-**Frontend**
-- React 19 with React Router v7
-- Stripe.js / `@stripe/react-stripe-js` for embedded checkout
+## ✨ Features
 
-**Backend**
-- Java 21, Spring Boot 3.3 (Web, Data JPA)
-- MySQL database
-- JWT authentication (JJWT 0.12) for the admin panel
-- Stripe Java SDK for honeymoon fund payments
-- AWS S3 (SDK v2) with pre-signed URLs for photo uploads and retrieval
-
-**Testing**
-- JUnit 5 + Mockito via `spring-boot-starter-test`
-
-**Infrastructure**
-- Maven build, deployed on an AWS EC2 instance via `build.sh` / `upgrade.sh`
+- 🔍 **Wedding lookup** by personalized token
+- 💌 **RSVP submission** with plus-one support
+- 💛 **Honeymoon fund** via Stripe embedded checkout
+- 🖼️ **Photo gallery** — guests upload photos via s3
+- 🔐 **Admin panel** with JWT authentication
 
 ---
 
-## Project Structure
+## 🛠️ Tech Stack
+
+**Frontend**
+- React 19 
+- Stripe.js
+
+**Backend**
+- Java 21
+- Spring Boot 3.3
+- MySQL database
+- JWT authentication
+- Stripe Java SDK
+- AWS S3
+
+**Testing**
+- JUnit 5 
+
+**Infrastructure**
+- Maven
+- AWS EC2 instance 
+
+---
+
+## 📁 Project Structure
 
 ```
 invites/
+├── assets/          # Design assets (mockups, screenshots)
 ├── client/          # React frontend
 ├── server/          # Spring Boot backend
 │   └── src/
@@ -47,11 +62,44 @@ invites/
 
 ---
 
-## Local Setup
+## 🗺️ Example Outputs
+
+### 🤍 Landing Page & Events
+
+<table align="center"><tr>
+  <td><img src="assets/screenshot-landing.png" width="150" alt="Landing — The wedding of Nicholas & Christiana, Sunday August 16 2026, Tampa Florida" /></td>
+  <td><img src="assets/screenshot-events.png" width="150" alt="Events — Ceremony at Amazing Church 08:15 AM · Dinner at Awesome Restaurant 09:30 AM" /></td>
+</tr></table>
+
+### 💌 RSVP & Responses
+
+<table align="center"><tr>
+  <td><img src="assets/screenshot-rsvp.png" width="220" alt="RSVP form with Accept and Decline buttons" /></td>
+  <td><img src="assets/screenshot-rsvp-accept.png" width="220" alt="Thank you for attending — Nicholas & Christiana" /></td>
+  <td><img src="assets/screenshot-rsvp-decline.png" width="220" alt="Thank you, we'll miss you — Nicholas & Christiana" /></td>
+</tr></table>
+
+### 🖼️ Gallery & Responses
+
+<table align="center"><tr>
+  <td><img src="assets/screenshot-gallery.png" width="220" alt="Gallery page with photos and Choose Photos button" /></td>
+  <td><img src="assets/screenshot-gallery-success.png" width="220" alt="Upload succeeded — Nicholas & Christiana" /></td>
+  <td><img src="assets/screenshot-gallery-limit.png" width="220" alt="Please upload up to 5 photos at a time — Nicholas & Christiana" /></td>
+</tr></table>
+
+### 💛 Honeymoon Fund & Stripe Checkout
+
+<table align="center"><tr>
+  <td><img src="assets/screenshot-honeymoon.png" width="220" alt="Honeymoon Fund page with dollar input and Contribute button" /></td>
+  <td><img src="assets/screenshot-stripe.png" width="220" alt="Stripe checkout for $123 honeymoon fund contribution" /></td>
+  <td><img src="assets/screenshot-honeymoon-success.png" width="220" alt="Payment received $123 — Thank you for contributing to our honeymoon fund" /></td>
+</tr></table>
+
+---
+
+## 🚀 Local Setup
 
 ### 1. Database
-
-Create the test and/or production database using the provided SQL scripts:
 
 ```bash
 mysql -u root -p < server/src/main/resources/sql/wedding-db-schema-prod.sql
@@ -60,8 +108,6 @@ mysql -u root -p < server/src/main/resources/sql/wedding-db-schema-test.sql
 ```
 
 ### 2. Backend configuration
-
-Copy the example config and fill in your values:
 
 ```bash
 cp server/src/main/resources/application.properties.example \
@@ -88,8 +134,6 @@ cd server
 mvn spring-boot:run
 ```
 
-The API is available at `http://localhost:8080`.
-
 ### 4. Run the frontend
 
 ```bash
@@ -98,13 +142,9 @@ npm install
 npm start
 ```
 
-The app is available at `http://localhost:3000`. Requests to `/api/*` are proxied to the backend.
-
 ---
 
-## Running Tests
-
-Tests require the `wedding_db_test` database to be running locally with the test schema applied (see step 1 above). Test credentials are configured in `server/src/test/resources/application.properties`.
+## 🧪 Running Tests
 
 ```bash
 cd server
@@ -113,7 +153,7 @@ mvn test
 
 ---
 
-## Deployment
+## 📦 Deployment
 
 ### Build
 
@@ -140,7 +180,7 @@ The server expects an `application.properties` file placed next to `app.jar` on 
 
 ---
 
-## API Overview
+## 📡 API Overview
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|

@@ -51,7 +51,7 @@ CREATE TABLE rsvp (
 CREATE TABLE photo (
 	photo_id INT AUTO_INCREMENT PRIMARY KEY,
     wedding_id INT DEFAULT 1,
-    s3_key VARCHAR(50) NOT NULL UNIQUE,
+    s3_key VARCHAR(255) NOT NULL UNIQUE,
     uploaded_at DATETIME NOT NULL,
     uploaded_by VARCHAR(255) NOT NULL,
     is_approved BOOLEAN DEFAULT TRUE,
