@@ -17,30 +17,36 @@ function Invitation() {
   const [showUpload, setShowUpload] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [noToken, setNoToken] = useState(false);
 
   useEffect(() => {
     fetch("/api/info")
       .then((res) => res.json())
       .then((data) => setWedding(data));
-
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
-    if (urlToken) {
-      setToken(urlToken);
-      fetch(`/api/rsvp?token=${encodeURIComponent(urlToken)}`)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Token not found");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          setMainGuest(data.mainGuestName || "");
-          setPlusOne(data.plusOneName || "");
-          setAllowPlusOne(data.hasPlusOne === true);
-        })
-        .catch(() => setResponse({message: "Failed to load RSVP data."}));
+    if (!urlToken) {
+      setNoToken(true);
+      return;
     }
+
+    setToken(urlToken);
+    fetch(`/api/rsvp?token=${encodeURIComponent(urlToken)}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Token not found");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setMainGuest(data.mainGuestName || "");
+        setPlusOne(data.plusOneName || "");
+        setAllowPlusOne(data.hasPlusOne === true);
+      })
+
+    fetch("/api/photo-gallery")
+      .then((res) => res.json())
+      .then((photos) => setPhotos(photos))
   }, []);
   
   const submitRSVP = async (attending) => {
@@ -69,12 +75,6 @@ function Invitation() {
       setResponse({ message: "RSVP failed. Please try again later." });
     }
   };
-
-  useEffect(() => {
-    fetch("/api/photo-gallery")
-      .then((res) => res.json())
-      .then((photos) => setPhotos(photos))
-  }, []);
 
   const handleFileChange = (e) => { setFiles(Array.from(e.target.files)); };
 
@@ -187,6 +187,10 @@ function Invitation() {
       window.history.replaceState({}, "", `/?token=${token}`);
     }
   }, []);
+
+  if (noToken) {
+    return <h2>Please contact us for your personal link...</h2>;
+  }
 
   if (!wedding) {
     return <h2>Loading wedding data...</h2>;

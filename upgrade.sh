@@ -44,6 +44,20 @@ log() { printf '\n\033[1;34m==>\033[0m %s\n' "\$1"; }
 log "Unzipping $ZIP_NAME"
 cd ~
 unzip -q "$ZIP_NAME" -d .
+rm -f ~/wedding-*.zip
+
+log "Syncing application config"
+for dir in ~/wedding-*/; do
+  if [ "\$dir" != ~/"$NEW_DIR"/ ] && [ -f "\${dir}application.properties" ]; then
+    cp "\${dir}application.properties" ~/"$NEW_DIR/application.properties"
+    sed -i 's|^app\.base-url=.*|app.base-url=http://3.80.113.81:8080|' ~/"$NEW_DIR/application.properties"
+    echo "  Config copied from \$dir and base-url set to production"
+    break
+  fi
+done
+if [ ! -f ~/"$NEW_DIR/application.properties" ]; then
+  echo "  WARNING: no application.properties found — place one in ~/$NEW_DIR/ before starting"
+fi
 
 log "Stopping existing server"
 pkill -f 'java.*app.jar' || echo "  (no server running)"
@@ -63,7 +77,6 @@ for dir in ~/wedding-*/; do
     rm -rf "\$dir"
   fi
 done
-rm -f ~/"$ZIP_NAME"
 
 log "Verifying deployment"
 sleep 3

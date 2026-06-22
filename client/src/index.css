@@ -156,7 +156,7 @@ p {
   background: rgba(255,255,255,0.06);
   color: var(--white);
   font-family: "Playfair Display", serif;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   transition: all .3s ease;
 }
 
@@ -433,7 +433,7 @@ p {
   .name,
   .rsvp-form input {
     padding: 10px 14px;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
   }
 
   .rsvp-form button {
@@ -496,7 +496,7 @@ p {
   .name,
   .rsvp-form input {
     padding: 10px 14px;
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
 
   .upload-btn {
