@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -138,7 +137,7 @@ class WeddingControllerTest {
         verify(photoRepo).save(captor.capture());
         Photo saved = captor.getValue();
         assertEquals("uuid-cake.png", saved.getS3Key());
-        assertFalse(saved.isApproved(), "newly saved photos should await approval");
+        assertTrue(saved.isApproved(), "photos should be auto-approved on save");
         assertNotNull(saved.getUploadedAt());
     }
 

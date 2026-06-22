@@ -220,7 +220,7 @@ public class WeddingController {
                 uploadedBy += " & " + plusOne;
             }
         }
-        Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, false);
+        Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, true);
         photoRepo.save(photo);
         return ResponseEntity.ok(Map.of("message", "Photo saved successfully"));
     }

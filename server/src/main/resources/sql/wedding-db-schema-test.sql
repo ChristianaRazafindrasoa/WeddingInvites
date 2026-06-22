@@ -34,7 +34,7 @@ CREATE TABLE guest (
 
 CREATE TABLE rsvp (
     rsvp_id INT AUTO_INCREMENT PRIMARY KEY,
-    token VARCHAR(6) NOT NULL UNIQUE,
+    token VARCHAR(50) NOT NULL UNIQUE,
     wedding_id INT DEFAULT 1,
     main_guest_id INT NOT NULL,
     plus_one_id INT,

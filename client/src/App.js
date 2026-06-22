@@ -9,7 +9,7 @@ function Invitation() {
   const [allowPlusOne, setAllowPlusOne] = useState(true);
   const [token, setToken] = useState("");
   const [photos, setPhotos] = useState([]);
-  const [files, setFiles] = useState([]);
+  const [, setFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [amount, setAmount] = useState("");
   const [response, setResponse] = useState(null);
@@ -17,6 +17,7 @@ function Invitation() {
   const [showUpload, setShowUpload] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [donating, setDonating] = useState(false);
   const [noToken, setNoToken] = useState(false);
 
   useEffect(() => {
@@ -76,9 +77,13 @@ function Invitation() {
     }
   };
 
-  const handleFileChange = (e) => { setFiles(Array.from(e.target.files)); };
+  const handleFileChange = async (e) => {
+    const selected = Array.from(e.target.files);
+    if (selected.length === 0) return;
+    await uploadPhotos(selected);
+  };
 
-  const uploadPhotos = async () => {
+  const uploadPhotos = async (selectedFiles) => {
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
     if (!urlToken) {
@@ -86,14 +91,14 @@ function Invitation() {
       clearUpload();
       return;
     }
-    if (files.length > 5) {
+    if (selectedFiles.length > 5) {
       setResponse({ message: "Please upload up to 5 photos at a time."});
       clearUpload();
       return;
     }
     setUploading(true);
     try {
-      for (const file of files) {
+      for (const file of selectedFiles) {
         const presignResponse = await fetch(
           "/api/photos/upload",
           {
@@ -137,7 +142,10 @@ function Invitation() {
           }
         );
       }
-      setResponse({ message: "Upload succeeded. Please refresh the browser. 🤍"});
+      fetch("/api/photo-gallery")
+        .then((res) => res.json())
+        .then((updated) => setPhotos(updated));
+      setResponse({ message: "Upload succeeded. 🤍" });
     } catch {
       setResponse({ message: "Upload failed. Please try again later." });
     }
@@ -154,20 +162,31 @@ function Invitation() {
     if (amount <= 0) {
       return;
     }
-    const response = await fetch("/api/honeymoon-fund", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        amount: amount,
-        token: token,
-        name: mainGuest
-      })
-    });
-    const session = await response.json();
-    window.location.href = session.url;
+    setDonating(true);
+    try {
+      const response = await fetch("/api/honeymoon-fund", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: amount,
+          token: token,
+          name: mainGuest
+        })
+      });
+      const session = await response.json();
+      window.location.href = session.url;
+    } catch {
+      setDonating(false);
+    }
   }
+
+  useEffect(() => {
+    const handlePageShow = (e) => { if (e.persisted) setDonating(false); };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -216,7 +235,7 @@ function Invitation() {
           <li key={index}>
             <strong>{event.name}</strong>
             <div>{event.location}</div>
-            <div>{event.address}</div>
+            <div><a href={`https://maps.apple.com/?q=${encodeURIComponent(event.address)}`} target="_blank" rel="noreferrer" style={{color: "inherit", textDecoration: "none"}}>{event.address}</a></div>
             <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"})}</div>
@@ -259,6 +278,7 @@ function Invitation() {
             <img 
               src={photo.url} 
               alt={`${index + 1}`} 
+              key={photo.s3Key}
               className="gallery-img" 
               title={`By ${photo.uploadedBy}`}
             />
@@ -272,15 +292,9 @@ function Invitation() {
           multiple
           accept="image/*"
           onChange={handleFileChange}/>
-        <label htmlFor="file-input" className="upload-btn">Choose Photos</label>
-          {files.length > 0 && (
-            <div>
-              <p>{files.length} photo(s) selected</p>
-              <button className="upload-btn" onClick={uploadPhotos} disabled={uploading}>
-                {uploading ? "Uploading..." : "Upload"}
-              </button>
-            </div>
-          )}
+        <label htmlFor={uploading ? undefined : "file-input"} className="upload-btn" style={uploading ? {opacity: 0.7, cursor: "default"} : {}}>
+          {uploading ? "Uploading..." : "Upload"}
+        </label>
           {showUpload && 
             <div className="banner">
               {response.message} <br></br>
@@ -310,7 +324,7 @@ function Invitation() {
             }}
             onChange={(e) => setAmount(e.target.value)}/>
         </div>
-        <button onClick={handleDonation}>Contribute</button>
+        <button onClick={handleDonation} disabled={donating}>{donating ? "Contributing..." : "Contribute"}</button>
         {showSuccess && (
           <div className="banner">
             <p>Payment received: ${amount}</p>
