@@ -10,7 +10,7 @@ export default function AdminPanel() {
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const res = await fetch("/api/admin/login", {
+    const res = await fetch("/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password })
@@ -32,11 +32,11 @@ export default function AdminPanel() {
     setError(null);
 
     Promise.all([
-      fetch("/api/guests", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
+      fetch("/admin/guests", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
         if (!res.ok) throw new Error("Failed to load guests");
         return res.json();
       }),
-      fetch("/api/rsvps", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
+      fetch("/admin/rsvps", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),

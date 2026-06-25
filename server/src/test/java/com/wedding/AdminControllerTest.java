@@ -31,7 +31,7 @@ class AdminControllerTest {
                 {"password": "%s"}
                 """.formatted(adminPassword);
 
-        String response = mockMvc.perform(post("/api/admin/login")
+        String response = mockMvc.perform(post("/admin/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -44,7 +44,7 @@ class AdminControllerTest {
     void getAllGuestsReturnsGuestList() throws Exception {
         String token = getToken();
 
-        mockMvc.perform(get("/api/guests")
+        mockMvc.perform(get("/admin/guests")
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -57,7 +57,7 @@ class AdminControllerTest {
     void getAllRsvpsReturnsRsvpList() throws Exception {
         String token = getToken();
 
-        mockMvc.perform(get("/api/rsvps")
+        mockMvc.perform(get("/admin/rsvps")
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -70,19 +70,19 @@ class AdminControllerTest {
 
     @Test
     void getAllGuestsWithoutTokenReturns401() throws Exception {
-        mockMvc.perform(get("/api/guests"))
+        mockMvc.perform(get("/admin/guests"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void getAllRsvpsWithoutTokenReturns401() throws Exception {
-        mockMvc.perform(get("/api/rsvps"))
+        mockMvc.perform(get("/admin/rsvps"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void loginWithWrongPasswordReturns401() throws Exception {
-        mockMvc.perform(post("/api/admin/login")
+        mockMvc.perform(post("/admin/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"password\": \"wrongpassword\"}"))
                 .andExpect(status().isUnauthorized());

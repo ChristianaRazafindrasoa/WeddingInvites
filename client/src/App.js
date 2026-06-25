@@ -9,6 +9,7 @@ function Invitation() {
   const [allowPlusOne, setAllowPlusOne] = useState(true);
   const [token, setToken] = useState("");
   const [photos, setPhotos] = useState([]);
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [, setFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [amount, setAmount] = useState("");
@@ -274,16 +275,37 @@ function Invitation() {
       <div className="gallery-section">
         <p>Find and upload photos here after the wedding.</p>
         <div className="gallery">
-          {photos.map((photo, index) => (
-            <img 
-              src={photo.url} 
-              alt={`${index + 1}`} 
+          {photos.slice(-5).map((photo, index) => (
+            <img
+              src={photo.url}
+              alt={`${index + 1}`}
               key={photo.s3Key}
-              className="gallery-img" 
+              className="gallery-img"
               title={`By ${photo.uploadedBy}`}
             />
           ))}
         </div>
+        {photos.length > 0 && (
+          <button className="view-all-btn" onClick={() => setShowAllPhotos(true)}>
+            View All ({photos.length})
+          </button>
+        )}
+        {showAllPhotos && (
+          <div className="photo-overlay" onClick={() => setShowAllPhotos(false)}>
+            <button className="photo-overlay-close" onClick={() => setShowAllPhotos(false)}>✕</button>
+            <div className="photo-grid" onClick={(e) => e.stopPropagation()}>
+              {photos.map((photo, index) => (
+                <img
+                  src={photo.url}
+                  alt={`${index + 1}`}
+                  key={photo.s3Key}
+                  className="photo-grid-img"
+                  title={`By ${photo.uploadedBy}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <input
           id="file-input"
           ref={fileInputRef}

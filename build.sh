@@ -54,9 +54,9 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 sudo systemctl start docker
 docker start mysql-wedding
-exec java ${JAVA_OPTS:-} \
+nohup java ${JAVA_OPTS:-} \
   -Dspring.config.additional-location=optional:file:./application.properties \
-  -jar app.jar "$@"
+  -jar app.jar "$@" > server.log 2>&1 &
 LAUNCH
 chmod +x "$STAGE_DIR/run.sh"
 

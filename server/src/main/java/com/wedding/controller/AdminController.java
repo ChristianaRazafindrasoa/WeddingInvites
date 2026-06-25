@@ -18,7 +18,7 @@ import com.wedding.model.Guest;
 import com.wedding.model.RSVP;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("admin")
 @CrossOrigin(origins = {"http://localhost:3000", "http://3.80.113.81:8080"})
 public class AdminController {
     private final AdminService adminService;
@@ -47,7 +47,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getCreatedRSVPs());
     }
 
-    @PostMapping("/admin/login")
+    @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) {
         if (!adminPassword.equals(body.get("password"))) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid password"));
