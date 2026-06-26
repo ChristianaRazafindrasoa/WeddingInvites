@@ -1,4 +1,6 @@
 package com.wedding.dto;
 
-public record RSVPResponse(String mainGuestName, String plusOneName, boolean hasPlusOne, String message) {
+import java.util.Optional;
+
+public record RSVPResponse(String mainGuestName, String plusOneName, boolean hasPlusOne, Optional<String> message) {
 }

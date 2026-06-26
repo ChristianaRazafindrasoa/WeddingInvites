@@ -1,12 +1,14 @@
 package com.wedding;
 
 import com.stripe.exception.ApiConnectionException;
+import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.wedding.controller.WeddingController;
 import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
 import com.wedding.domain.RSVPService;
+import com.wedding.exception.WeddingException;
 import com.wedding.model.Photo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,8 +83,8 @@ class WeddingControllerTest {
                 "amount", "0",
                 "token", "abc123",
                 "name", "Foo Test");
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
+        WeddingException ex = assertThrows(
+                WeddingException.class,
                 () -> controller.createCheckoutSession(payload));
         assertEquals("Minimum donation amount is $1", ex.getMessage());
     }
@@ -95,17 +97,15 @@ class WeddingControllerTest {
             mocked.when(() -> Session.retrieve("sess_123")).thenReturn(session);
             ResponseEntity<Map<String, Object>> response = controller.getSession("sess_123");
             assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertEquals(50.0, response.getBody().get("amount"));
+            assertEquals(50L, response.getBody().get("amount"));
         }
     }
 
     @Test
-    void getSessionReturnsNotFoundWhenStripeFails() throws Exception {
+    void getSessionThrowsWhenStripeFails() throws Exception {
         try (MockedStatic<Session> mocked = mockStatic(Session.class)) {
             mocked.when(() -> Session.retrieve("bad")).thenThrow(new ApiConnectionException("boom"));
-            ResponseEntity<Map<String, Object>> response = controller.getSession("bad");
-            assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-            assertEquals("Checkout session not found", response.getBody().get("error"));
+            assertThrows(StripeException.class, () -> controller.getSession("bad"));
         }
     }
 

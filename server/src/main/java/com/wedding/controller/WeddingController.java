@@ -27,6 +27,7 @@ import com.wedding.data.WeddingInfoRepository;
 import com.wedding.domain.RSVPService;
 import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
+import com.wedding.exception.WeddingException;
 import com.wedding.model.Photo;
 import com.wedding.model.WeddingInfo;
 import software.amazon.awssdk.regions.Region;
@@ -74,46 +75,24 @@ public class WeddingController {
 
     @GetMapping("/rsvp")
     public ResponseEntity<RSVPResponse> getByToken(@RequestParam String token) {
-        try {
-            return ResponseEntity.ok(rsvpService.findByToken(token));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        RSVPResponse response = rsvpService.findByToken(token);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/rsvp")
     public ResponseEntity<RSVPResponse> submit(@RequestBody RSVPRequest request) {
-        try {
-            RSVPResponse response = rsvpService.submit(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(
-                new RSVPResponse(
-                        null,
-                        null,
-                        false,
-                        e.getMessage()
-                )
-            );
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                new RSVPResponse(
-                        null,
-                        null,
-                        false,
-                        e.getMessage()
-                )
-            );
-        }
+        RSVPResponse response = rsvpService.submit(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/honeymoon-fund")
     public ResponseEntity<Map<String, String>> createCheckoutSession(
             @RequestBody Map<String, Object> payload) throws StripeException{
-        Long amountValue = Long.valueOf(payload.get("amount").toString());
-        if (amountValue <= 0) {
-            throw new IllegalStateException("Minimum donation amount is $1");
+        Long amountInCents = Long.valueOf(payload.get("amount").toString());
+        if (amountInCents <= 0) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, "Minimum donation amount is $1");
         }
+
         String successUrl = baseUrl + "/?token=" +
             payload.get("token") + "&success=true&id={CHECKOUT_SESSION_ID}";
         SessionCreateParams params = SessionCreateParams.builder()
@@ -126,7 +105,7 @@ public class WeddingController {
                     .setPriceData(
                         SessionCreateParams.LineItem.PriceData.builder()
                             .setCurrency("usd")
-                            .setUnitAmount(amountValue * 100)
+                            .setUnitAmount(amountInCents * 100)
                             .setProductData(
                                 SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                     .setName("Honeymoon Fund Contribution")
@@ -137,24 +116,16 @@ public class WeddingController {
                     .build()
             )
             .build();
-
         Session session = Session.create(params);
         return ResponseEntity.ok(Map.of("url", session.getUrl()));
     }
 
     @GetMapping("/checkout-session/{sessionId}")
-    public ResponseEntity<Map<String, Object>> getSession(
-        @PathVariable String sessionId) {
-        try {
-            Session session = Session.retrieve(sessionId);
-            return ResponseEntity.ok(Map.of(
-                "amount", session.getAmountTotal() / 100.0
-            ));
-        } catch (StripeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                "error", "Checkout session not found" 
-            ));
-        }
+    public ResponseEntity<Map<String, Object>> getSession (
+            @PathVariable String sessionId) throws StripeException {
+        Session session = Session.retrieve(sessionId);
+        Long amountInCents = session.getAmountTotal();
+        return ResponseEntity.ok(Map.of("amount", amountInCents / 100L));
     }
 
     @GetMapping("/photo-gallery")
@@ -169,7 +140,7 @@ public class WeddingController {
         return response;
     }  
 
-    private String getPresignedURL(String s3key){
+    private String getPresignedURL(String s3key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
             .bucket(bucketName)
             .key(s3key)

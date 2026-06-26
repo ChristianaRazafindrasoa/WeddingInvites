@@ -54,8 +54,8 @@ class RSVPControllerTest {
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error")
                         .value("RSVP already submitted."));
     }
 
@@ -71,8 +71,8 @@ class RSVPControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message")
-                        .value("RSVP token not found."));
+                .andExpect(jsonPath("$.error")
+                        .value("RSVP not found."));
     }
 
     @Test

@@ -44,21 +44,29 @@ public class AdminService {
         return rsvpRepo.findAll();
     }
 
-    private SecretKey key() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    private SecretKey createKey() {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(bytes);
     }
 
-    public String generate() {
+    public String generateToken() {
+        Date expirationDate = new Date(
+            System.currentTimeMillis() + expiryHours * 3_600_000L);
+        SecretKey secretKey = createKey();
         return Jwts.builder()
             .subject("admin")
-            .expiration(new Date(System.currentTimeMillis() + expiryHours * 3_600_000L))
-            .signWith(key())
+            .expiration(expirationDate)
+            .signWith(secretKey)
             .compact();
     }
 
-    public boolean validate(String token) {
+    public boolean validateToken(String token) {
+        SecretKey secretKey = createKey();
         try {
-            Jwts.parser().verifyWith(key()).build().parseSignedClaims(token);
+            Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
             return false;
