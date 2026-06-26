@@ -10,7 +10,8 @@ function Invitation() {
   const [token, setToken] = useState("");
   const [photos, setPhotos] = useState([]);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
-  const [, setFiles] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const sentinelRef = useRef(null);
   const fileInputRef = useRef(null);
   const [amount, setAmount] = useState("");
   const [response, setResponse] = useState(null);
@@ -156,7 +157,6 @@ function Invitation() {
   const clearUpload = () => {
     setUploading(false);
     setShowUpload(true);
-    setFiles([]);
   }
 
   const handleDonation = async () => {
@@ -208,6 +208,17 @@ function Invitation() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!showAllPhotos) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisibleCount((c) => c + 8); },
+      { threshold: 0.1 }
+    );
+    const el = sentinelRef.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, [showAllPhotos, visibleCount]);
+
   if (noToken) {
     return <h2>Please contact us for your personal link...</h2>;
   }
@@ -236,7 +247,7 @@ function Invitation() {
           <li key={index}>
             <strong>{event.name}</strong>
             <div>{event.location}</div>
-            <div><a href={`https://maps.apple.com/?q=${encodeURIComponent(event.address)}`} target="_blank" rel="noreferrer" style={{color: "inherit", textDecoration: "none"}}>{event.address}</a></div>
+            <div><a href={`https://maps.apple.com/?q=${encodeURIComponent(event.address)}`} target="_blank" rel="noreferrer" className="address-link">{event.address}</a></div>
             <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"})}</div>
@@ -286,15 +297,17 @@ function Invitation() {
           ))}
         </div>
         {photos.length > 0 && (
-          <button className="view-all-btn" onClick={() => setShowAllPhotos(true)}>
+          <button className="view-all-btn" onClick={() => { setVisibleCount(12); setShowAllPhotos(true); }}>
             View All ({photos.length})
           </button>
         )}
         {showAllPhotos && (
-          <div className="photo-overlay" onClick={() => setShowAllPhotos(false)}>
-            <button className="photo-overlay-close" onClick={() => setShowAllPhotos(false)}>✕</button>
-            <div className="photo-grid" onClick={(e) => e.stopPropagation()}>
-              {photos.map((photo, index) => (
+          <div className="photo-overlay">
+            <div className="photo-overlay-header">
+              <button className="photo-overlay-close" onClick={() => setShowAllPhotos(false)}> x </button>
+            </div>
+            <div className="photo-grid">
+              {photos.slice(0, visibleCount).map((photo, index) => (
                 <img
                   src={photo.url}
                   alt={`${index + 1}`}
@@ -303,6 +316,9 @@ function Invitation() {
                   title={`By ${photo.uploadedBy}`}
                 />
               ))}
+              {visibleCount < photos.length && (
+                <div ref={sentinelRef} style={{ gridColumn: "1 / -1", height: 40 }} />
+              )}
             </div>
           </div>
         )}
@@ -314,15 +330,15 @@ function Invitation() {
           multiple
           accept="image/*"
           onChange={handleFileChange}/>
-        <label htmlFor={uploading ? undefined : "file-input"} className="upload-btn" style={uploading ? {opacity: 0.7, cursor: "default"} : {}}>
+        <label htmlFor={uploading ? undefined : "file-input"} 
+            className="upload-btn" style={uploading ? {opacity: 0.7, cursor: "default"} : {}}>
           {uploading ? "Uploading..." : "Upload"}
         </label>
           {showUpload && 
             <div className="banner">
               {response.message} <br></br>
               <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
-              <button onClick={() => { setShowUpload(false); setFiles([]);
-                  if (fileInputRef.current) {
+              <button onClick={() => { setShowUpload(false);                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";
                   }
                 }}>Close
