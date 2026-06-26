@@ -85,6 +85,21 @@ function Invitation() {
     await uploadPhotos(selected);
   };
 
+  const compressImage = (file, maxWidth = 1200, quality = 0.75) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, maxWidth / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", quality);
+      };
+    });
+  };
+
   const uploadPhotos = async (selectedFiles) => {
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
@@ -100,7 +115,8 @@ function Invitation() {
     }
     setUploading(true);
     try {
-      for (const file of selectedFiles) {
+      for (const rawFile of selectedFiles) {
+        const file = await compressImage(rawFile);
         const presignResponse = await fetch(
           "/api/photos/upload",
           {
@@ -293,6 +309,7 @@ function Invitation() {
               key={photo.s3Key}
               className="gallery-img"
               title={`By ${photo.uploadedBy}`}
+              loading="lazy"
             />
           ))}
         </div>
@@ -314,6 +331,7 @@ function Invitation() {
                   key={photo.s3Key}
                   className="photo-grid-img"
                   title={`By ${photo.uploadedBy}`}
+                  loading="lazy"
                 />
               ))}
               {visibleCount < photos.length && (
