@@ -29,14 +29,17 @@ public class AdminController {
     private final AdminService adminService;
     private final String adminPassword;
 
-    public AdminController(AdminService adminService, @Value("${admin.password}") String adminPassword) {
+    public AdminController(
+            AdminService adminService, 
+            @Value("${admin.password}") String adminPassword) {
         this.adminService = adminService;
         this.adminPassword = adminPassword;
     }
 
     @GetMapping
     public void index(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.getRequestDispatcher("/index.html").forward(request, response);
+        request.getRequestDispatcher("/index.html")
+            .forward(request, response);
     }
 
     @GetMapping("/guests")

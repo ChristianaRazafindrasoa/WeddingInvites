@@ -95,7 +95,8 @@ function Invitation() {
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
         canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", quality);
+        canvas.toBlob((blob) => resolve(
+          new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", quality);
       };
     });
   };
@@ -263,7 +264,9 @@ function Invitation() {
           <li key={index}>
             <strong>{event.name}</strong>
             <div>{event.location}</div>
-            <div><a href={`https://maps.apple.com/?q=${encodeURIComponent(event.address)}`} target="_blank" rel="noreferrer" className="address-link">{event.address}</a></div>
+            <div><a href={`https://maps.apple.com/?q=${encodeURIComponent(event.address)}`} 
+              target="_blank" rel="noreferrer" 
+              className="address-link">{event.address}</a></div>
             <div>{new Date(event.startTime).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"})}</div>
@@ -314,14 +317,16 @@ function Invitation() {
           ))}
         </div>
         {photos.length > 0 && (
-          <button className="view-all-btn" onClick={() => { setVisibleCount(12); setShowAllPhotos(true); }}>
+          <button className="view-all-btn" onClick={
+            () => { setVisibleCount(12); setShowAllPhotos(true); }}>
             View All ({photos.length})
           </button>
         )}
         {showAllPhotos && (
           <div className="photo-overlay">
             <div className="photo-overlay-header">
-              <button className="photo-overlay-close" onClick={() => setShowAllPhotos(false)}> x </button>
+              <button className="photo-overlay-close" onClick={
+                () => setShowAllPhotos(false)}> x </button>
             </div>
             <div className="photo-grid">
               {photos.slice(0, visibleCount).map((photo, index) => (
@@ -356,11 +361,11 @@ function Invitation() {
             <div className="banner">
               {response.message} <br></br>
               <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
-              <button onClick={() => { setShowUpload(false);                   if (fileInputRef.current) {
+              <button onClick={() => { setShowUpload(false);                   
+                  if (fileInputRef.current) {
                     fileInputRef.current.value = "";
                   }
-                }}>Close
-              </button>
+                }}>Close</button>
             </div>} 
       </div>
 
@@ -380,7 +385,8 @@ function Invitation() {
             }}
             onChange={(e) => setAmount(e.target.value)}/>
         </div>
-        <button onClick={handleDonation} disabled={donating}>{donating ? "Contributing..." : "Contribute"}</button>
+        <button onClick={handleDonation} disabled={donating}>
+          {donating ? "Contributing..." : "Contribute"}</button>
         {showSuccess && (
           <div className="banner">
             <p>Payment received: ${amount}</p>

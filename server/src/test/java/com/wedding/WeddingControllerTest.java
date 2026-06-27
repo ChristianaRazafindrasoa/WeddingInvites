@@ -48,11 +48,9 @@ class WeddingControllerTest {
         WeddingInfoRepository infoRepo = mock(WeddingInfoRepository.class);
         photoRepo = mock(PhotoRepository.class);
         RSVPService rsvpService = mock(RSVPService.class);
-
         controller = new WeddingController(
                 infoRepo, photoRepo, rsvpService,
                 "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000");
-
         s3Presigner = mock(S3Presigner.class);
         ReflectionTestUtils.setField(controller, "s3Presigner", s3Presigner);
     }
@@ -61,15 +59,12 @@ class WeddingControllerTest {
     void createCheckoutSessionReturnsUrlWhenPayloadValid() throws Exception {
         Session session = mock(Session.class);
         when(session.getUrl()).thenReturn("https://checkout.stripe.com/session123");
-
         try (MockedStatic<Session> mocked = mockStatic(Session.class)) {
             mocked.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(session);
-
             Map<String, Object> payload = Map.of(
                     "amount", "50",
                     "token", "abc123",
                     "name", "Foo Test");
-
             ResponseEntity<Map<String, String>> response = controller.createCheckoutSession(payload);
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals("https://checkout.stripe.com/session123", response.getBody().get("url"));
@@ -114,11 +109,9 @@ class WeddingControllerTest {
         PresignedPutObjectRequest presigned = mock(PresignedPutObjectRequest.class);
         when(presigned.url()).thenReturn(URI.create("https://s3.amazonaws.com/test-bucket/upload").toURL());
         when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class))).thenReturn(presigned);
-
         Map<String, String> body = Map.of(
                 "contentType", "image/png",
                 "fileName", "cake.png");
-
         ResponseEntity<Map<String, String>> response = controller.putPresignedURL(body);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("https://s3.amazonaws.com/test-bucket/upload", response.getBody().get("uploadUrl"));
@@ -132,7 +125,6 @@ class WeddingControllerTest {
         ResponseEntity<?> response = controller.savePhoto(body);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Photo saved successfully", ((Map<?, ?>) response.getBody()).get("message"));
-
         ArgumentCaptor<Photo> captor = ArgumentCaptor.forClass(Photo.class);
         verify(photoRepo).save(captor.capture());
         Photo saved = captor.getValue();
@@ -146,11 +138,9 @@ class WeddingControllerTest {
     void getApprovedPicturesURLReturnsPresignedUrls() throws Exception {
         Photo photo = new Photo("key1.png", LocalDateTime.now(), "Jane & Bob", true);
         when(photoRepo.findByIsApproved(true)).thenReturn(List.of(photo));
-
         PresignedGetObjectRequest presigned = mock(PresignedGetObjectRequest.class);
         when(presigned.url()).thenReturn(URI.create("https://s3.amazonaws.com/test-bucket/key1.png").toURL());
         when(s3Presigner.presignGetObject(any(Consumer.class))).thenReturn(presigned);
-
         List<Map<String, String>> result = controller.getApprovedPicturesURL();
         assertEquals(1, result.size());
         assertEquals("https://s3.amazonaws.com/test-bucket/key1.png", result.get(0).get("url"));

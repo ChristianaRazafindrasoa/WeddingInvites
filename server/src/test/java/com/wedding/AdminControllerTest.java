@@ -30,20 +30,17 @@ class AdminControllerTest {
         String body = """
                 {"password": "%s"}
                 """.formatted(adminPassword);
-
         String response = mockMvc.perform(post("/admin/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-
         return new ObjectMapper().readTree(response).get("token").asText();
     }
 
     @Test
     void getAllGuestsReturnsGuestList() throws Exception {
         String token = getToken();
-
         mockMvc.perform(get("/admin/guests")
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
@@ -56,7 +53,6 @@ class AdminControllerTest {
     @Test
     void getAllRsvpsReturnsRsvpList() throws Exception {
         String token = getToken();
-
         mockMvc.perform(get("/admin/rsvps")
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))

@@ -16,13 +16,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleWeddingException (
             WeddingException ex) {
         return ResponseEntity.status(ex.getStatus())
-                .body(Map.of("error", ex.getLocalizedMessage()));
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(StripeException.class)
     public ResponseEntity<Map<String, String>> handleStripeException (
             StripeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(Map.of("error", ex.getLocalizedMessage()));
+                .body(Map.of("error", ex.getMessage()));
     }
 }

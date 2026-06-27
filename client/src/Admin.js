@@ -32,11 +32,13 @@ export default function AdminPanel() {
     setError(null);
 
     Promise.all([
-      fetch("/admin/guests", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
+      fetch("/admin/guests", { headers: { "Authorization": `Bearer ${token}` } })
+        .then((res) => {
         if (!res.ok) throw new Error("Failed to load guests");
         return res.json();
       }),
-      fetch("/admin/rsvps", { headers: { "Authorization": `Bearer ${token}` } }).then((res) => {
+      fetch("/admin/rsvps", { headers: { "Authorization": `Bearer ${token}` } })
+        .then((res) => {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),
@@ -101,7 +103,7 @@ export default function AdminPanel() {
         <table className="admin-table">
           <thead>
             <tr>
-              {/* <th>Token</th> */}
+              <th>Token</th>
               <th>Main Guest</th>
               <th>Plus One</th>
               <th>Responded</th>
@@ -110,13 +112,15 @@ export default function AdminPanel() {
           </thead>
           <tbody>
             {rsvps.map((rsvp) => {
-              const status = !rsvp.respondedAt ? "Pending" : rsvp.accepted ? "Accepted" : "Declined";
+              const status = !rsvp.respondedAt ? "Pending" : 
+                rsvp.accepted ? "Accepted" : "Declined";
               return (
                 <tr key={rsvp.id}>
-                  {/* <td>{rsvp.token}</td> */}
+                  <td>{rsvp.token}</td>
                   <td>{rsvp.mainGuest?.fullName ?? "-"}</td>
                   <td>{rsvp.plusOne?.fullName ?? "-"}</td>
-                  <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt).toLocaleString() : "-"}</td>
+                  <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt)
+                    .toLocaleString() : "-"}</td>
                   <td>
                     <span className={`status-dot ${status.toLowerCase()}`} />
                     {status}
