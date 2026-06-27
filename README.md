@@ -23,8 +23,8 @@ Guests look up their invitation by token, submit their RSVP,  upload photos to a
 **Backend**
 - Java 21
 - Spring Boot 3.3
-- MySQL database
-- JWT authentication
+- MySQL 
+- JWT 
 - Stripe Java SDK
 - AWS S3
 
@@ -33,7 +33,9 @@ Guests look up their invitation by token, submit their RSVP,  upload photos to a
 
 **Infrastructure**
 - Maven
-- AWS EC2 instance 
+- AWS EC2 
+- Docker 
+- nginx
 
 ---
 
@@ -96,6 +98,15 @@ invites/
 </tr></table>
 
 ---
+
+## 📊 Admin panel
+
+<table align="center"><tr>
+  <td><img src="assets/screenshot-admin-login.png" width="220" alt="Admin login page with password input and login button" /></td>
+  <td><img src="assets/screenshot-guests.png" width="220" alt="Guest list with total invited and attending guest count" /></td>
+  <td><img src="assets/screenshot-rsvps.png" width="220" alt="RSVP dashboard with guest names, submission timestamp and status" /></td>
+</tr></table>
+
 
 ## 🚀 Local Setup
 

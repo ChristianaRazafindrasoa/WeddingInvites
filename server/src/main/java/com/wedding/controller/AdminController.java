@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import com.wedding.domain.AdminService;
 import com.wedding.exception.WeddingException;
 import com.wedding.model.Guest;
@@ -29,6 +32,11 @@ public class AdminController {
     public AdminController(AdminService adminService, @Value("${admin.password}") String adminPassword) {
         this.adminService = adminService;
         this.adminPassword = adminPassword;
+    }
+
+    @GetMapping
+    public void index(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @GetMapping("/guests")

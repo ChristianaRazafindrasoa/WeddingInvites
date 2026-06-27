@@ -101,7 +101,7 @@ export default function AdminPanel() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Token</th>
+              {/* <th>Token</th> */}
               <th>Main Guest</th>
               <th>Plus One</th>
               <th>Responded</th>
@@ -113,7 +113,7 @@ export default function AdminPanel() {
               const status = !rsvp.respondedAt ? "Pending" : rsvp.accepted ? "Accepted" : "Declined";
               return (
                 <tr key={rsvp.id}>
-                  <td>{rsvp.token}</td>
+                  {/* <td>{rsvp.token}</td> */}
                   <td>{rsvp.mainGuest?.fullName ?? "-"}</td>
                   <td>{rsvp.plusOne?.fullName ?? "-"}</td>
                   <td>{rsvp.respondedAt ? new Date(rsvp.respondedAt).toLocaleString() : "-"}</td>
