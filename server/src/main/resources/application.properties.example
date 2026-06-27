@@ -7,5 +7,6 @@ aws.region=
 aws.bucket=
 admin.password=
 app.base-url=
+app.cors.origins=
 admin.jwt.secret=
 admin.jwt.expiry-hours=

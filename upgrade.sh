@@ -50,8 +50,7 @@ log "Syncing application config"
 for dir in ~/wedding-*/; do
   if [ "\$dir" != ~/"$NEW_DIR"/ ] && [ -f "\${dir}application.properties" ]; then
     cp "\${dir}application.properties" ~/"$NEW_DIR/application.properties"
-    sed -i 's|^app\.base-url=.*|app.base-url=http://3.80.113.81:8080|' ~/"$NEW_DIR/application.properties"
-    echo "  Config copied from \$dir and base-url set to production"
+    echo "  Config copied from \$dir"
     break
   fi
 done
@@ -67,7 +66,7 @@ docker stop mysql-wedding || echo "  (database was not running)"
 
 log "Starting new server and database"
 chmod +x "$NEW_DIR/run.sh"
-nohup "$NEW_DIR/run.sh" > "$NEW_DIR/server.log" 2>&1 &
+nohup "$NEW_DIR/run.sh" > "$NEW_DIR/server.log" 2>&1 < /dev/null &
 echo "  Server started (pid \$!), log: ~/$NEW_DIR/server.log"
 
 log "Cleaning up old deployments"
@@ -104,6 +103,3 @@ fi
 
 log "Done — running: $NEW_DIR"
 ENDSSH
-
-# ./build.sh
-# ./upgrade.sh /Users/christiana/Desktop/invites/dist/wedding-20260620-174301.zip ec2-user@3.80.113.81 /Users/christiana/Downloads/wedding-key.pem

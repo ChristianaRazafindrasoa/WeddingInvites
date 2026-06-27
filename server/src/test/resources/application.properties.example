@@ -6,6 +6,7 @@ stripe.secret.key=
 aws.region=
 aws.bucket=
 app.base-url=
+app.cors.origins=
 admin.password=
 admin.jwt.secret=<at-least-32-characters>
 admin.jwt.expiry-hours=

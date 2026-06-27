@@ -53,8 +53,10 @@ cat > "$STAGE_DIR/run.sh" <<'LAUNCH'
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 sudo systemctl start docker
+docker update --cpus="1" --memory="512m" --memory-swap="512m" mysql-wedding
 docker start mysql-wedding
-nohup java ${JAVA_OPTS:-} \
+nohup taskset -c 0 java ${JAVA_OPTS:-} \
+  -Xmx256m -XX:MaxMetaspaceSize=128m \
   -Dspring.config.additional-location=optional:file:./application.properties \
   -jar app.jar "$@" > server.log 2>&1 &
 LAUNCH

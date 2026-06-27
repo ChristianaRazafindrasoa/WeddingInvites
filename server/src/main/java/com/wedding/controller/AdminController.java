@@ -21,7 +21,7 @@ import com.wedding.model.RSVP;
 
 @RestController
 @RequestMapping("admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://3.80.113.81:8080"})
+@CrossOrigin(origins = "${app.cors.origins}")
 public class AdminController {
     private final AdminService adminService;
     private final String adminPassword;
