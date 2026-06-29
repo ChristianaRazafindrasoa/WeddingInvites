@@ -26,6 +26,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,8 +39,11 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.wedding.dto.RSVPResponse;
+
 class WeddingControllerTest {
     private PhotoRepository photoRepo;
+    private RSVPService rsvpService;
     private S3Presigner s3Presigner;
     private WeddingController controller;
 
@@ -47,7 +51,7 @@ class WeddingControllerTest {
     void setUp() {
         WeddingInfoRepository infoRepo = mock(WeddingInfoRepository.class);
         photoRepo = mock(PhotoRepository.class);
-        RSVPService rsvpService = mock(RSVPService.class);
+        rsvpService = mock(RSVPService.class);
         controller = new WeddingController(
                 infoRepo, photoRepo, rsvpService,
                 "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000");
@@ -121,7 +125,9 @@ class WeddingControllerTest {
 
     @Test
     void savePhotoPersistsUnapprovedPhotoAndReturnsMessage() {
-        Map<String, String> body = Map.of("s3Key", "uuid-cake.png");
+        when(rsvpService.findByToken("abc123"))
+                .thenReturn(new RSVPResponse("Foo Test", null, false, Optional.empty()));
+        Map<String, String> body = Map.of("s3Key", "uuid-cake.png", "token", "abc123");
         ResponseEntity<?> response = controller.savePhoto(body);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Photo saved successfully", ((Map<?, ?>) response.getBody()).get("message"));

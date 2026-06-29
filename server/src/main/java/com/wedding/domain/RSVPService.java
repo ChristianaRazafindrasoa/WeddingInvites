@@ -3,6 +3,8 @@ package com.wedding.domain;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -21,8 +23,12 @@ public class RSVPService {
     private final GuestRepository guestRepo;
     private final RSVPRepository rsvpRepo;
     private final TransactionTemplate transaction;
+    private final Logger log = LoggerFactory.getLogger(RSVPService.class);
 
-    public RSVPService(GuestRepository guestRepo, RSVPRepository rsvpRepo, PlatformTransactionManager txManager) {
+    public RSVPService(
+            GuestRepository guestRepo, 
+            RSVPRepository rsvpRepo, 
+            PlatformTransactionManager txManager) {
         this.guestRepo = guestRepo;
         this.rsvpRepo = rsvpRepo;
         this.transaction = new TransactionTemplate(txManager);
@@ -61,9 +67,12 @@ public class RSVPService {
     }
 
     private RSVP persist(RSVP rsvp, Guest mainGuest, RSVPRequest request) {
+        boolean wasAttending = mainGuest.isAttending();
+        boolean wasAccepted = rsvp.isAccepted();
+        LocalDateTime previousRespondedAt = rsvp.getRespondedAt();
         return transaction.execute(status -> {
             try {
-                if (request.plusOneName() != null && !request.plusOneName().isBlank()) {
+                if (request.plusOneName() != null) {
                     Guest plusOne = guestRepo.findByFullName(request.plusOneName())
                         .orElseThrow(() -> new WeddingException(
                             HttpStatus.NOT_FOUND, "Plus one not found."));
@@ -75,9 +84,13 @@ public class RSVPService {
                 rsvp.setRespondedAt(LocalDateTime.now());
                 rsvp.setAccepted(request.isAccepted());
                 return rsvpRepo.save(rsvp);
-            } catch (RuntimeException e) {
+            } catch (Throwable throwable) {
+                mainGuest.setAttending(wasAttending);
+                rsvp.setRespondedAt(previousRespondedAt);
+                rsvp.setAccepted(wasAccepted);
                 status.setRollbackOnly();
-                throw e;
+                log.error("RSVP transaction failed", throwable);
+                throw throwable;
             }
         });
     }

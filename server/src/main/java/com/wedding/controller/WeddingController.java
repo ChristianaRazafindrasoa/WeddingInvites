@@ -181,18 +181,24 @@ public class WeddingController {
             @RequestBody Map<String, String> body) {
         String s3Key = body.get("s3Key");
         String token = body.get("token");
+        check(s3Key != null, "key cannot be null");
+        check(token != null, "token cannot be null");
         String uploadedBy = null;
-        if (token != null) {
-            RSVPResponse response = rsvpService.findByToken(token);
-            String plusOne = response.plusOneName();
-            uploadedBy = response.mainGuestName();
-            if (plusOne != null) {
-                uploadedBy = response.mainGuestName().split(" ")[0];
-                uploadedBy += " & " + plusOne;
-            }
+        RSVPResponse response = rsvpService.findByToken(token);
+        String plusOne = response.plusOneName();
+        uploadedBy = response.mainGuestName();
+        if (plusOne != null) {
+            uploadedBy = response.mainGuestName().split(" ")[0];
+            uploadedBy += " & " + plusOne;
         }
         Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, true);
         photoRepo.save(photo);
         return ResponseEntity.ok(Map.of("message", "Photo saved successfully"));
+    }
+
+    private void check(boolean expression, String message) {
+        if (!expression) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, message);
+        }
     }
 }

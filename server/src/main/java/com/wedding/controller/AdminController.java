@@ -72,7 +72,8 @@ public class AdminController {
         if (auth == null) {
             return false;
         }
-        String token = auth.substring(7);
-        return auth.startsWith("Bearer ") && adminService.validateToken(token);
+        String bearer = "Bearer ";
+        String token = auth.substring(bearer.length());
+        return auth.startsWith(bearer) && adminService.validateToken(token);
     }
 }
