@@ -16,6 +16,8 @@ public class Photo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "photo_id")
     private Integer id;
+    @Column(name = "wedding_id")
+    private Integer weddingId = 1;
     @Column(name = "s3_key")
     private String s3Key;
     @Column(name = "uploaded_at")

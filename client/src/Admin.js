@@ -4,6 +4,7 @@ import "./index.css";
 export default function AdminPanel() {
   const [guests, setGuests] = useState([]);
   const [rsvps, setRsvps] = useState([]);
+  const [guestbook, setGuestbook] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [token, setToken] = useState(null);
@@ -42,10 +43,16 @@ export default function AdminPanel() {
         if (!res.ok) throw new Error("Failed to load RSVPs");
         return res.json();
       }),
+      fetch("/api/guestbook")
+        .then((res) => {
+        if (!res.ok) throw new Error("Failed to load guestbook");
+        return res.json();
+      }),
     ])
-      .then(([guestData, rsvpData]) => {
+      .then(([guestData, rsvpData, guestbookData]) => {
         setGuests(guestData);
         setRsvps(rsvpData);
+        setGuestbook(guestbookData);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -128,6 +135,26 @@ export default function AdminPanel() {
                 </tr>
               );
             })}
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Guestbook</h2>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th style={{width: "40%"}}>Guest</th>
+              <th style={{width: "60%"}}>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...guestbook].reverse().map((note) => (
+              <tr key={note.id}>
+                <td>{note.guestName}</td>
+                <td>{note.message}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </section>

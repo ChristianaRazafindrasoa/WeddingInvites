@@ -12,7 +12,7 @@ CREATE TABLE wedding_info (
 
 CREATE TABLE wedding_event (
 	event_id INT AUTO_INCREMENT PRIMARY KEY,
-    wedding_id INT DEFAULT 1,
+    wedding_id INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL,
     address VARCHAR(255),
@@ -23,7 +23,7 @@ CREATE TABLE wedding_event (
 
 CREATE TABLE guest (
     guest_id INT AUTO_INCREMENT PRIMARY KEY,
-    wedding_id INT DEFAULT 1,
+    wedding_id INT NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     phone VARCHAR(255),
     has_plus_one BOOLEAN,
@@ -35,7 +35,7 @@ CREATE TABLE guest (
 CREATE TABLE rsvp (
     rsvp_id INT AUTO_INCREMENT PRIMARY KEY,
     token VARCHAR(50) NOT NULL UNIQUE,
-    wedding_id INT DEFAULT 1,
+    wedding_id INT NOT NULL,
     main_guest_id INT NOT NULL,
     plus_one_id INT,
     responded_at DATETIME,
@@ -50,11 +50,20 @@ CREATE TABLE rsvp (
 
 CREATE TABLE photo (
 	photo_id INT AUTO_INCREMENT PRIMARY KEY,
-    wedding_id INT DEFAULT 1,
+    wedding_id INT NOT NULL,
     s3_key VARCHAR(255) NOT NULL UNIQUE,
     uploaded_at DATETIME NOT NULL,
     uploaded_by VARCHAR(255) NOT NULL,
     is_approved BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (wedding_id)
+        REFERENCES wedding_info(wedding_id)
+);
+
+CREATE TABLE note (
+    note_id INT AUTO_INCREMENT PRIMARY KEY,
+    wedding_id INT NOT NULL,
+    guest_name VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
     FOREIGN KEY (wedding_id)
         REFERENCES wedding_info(wedding_id)
 );

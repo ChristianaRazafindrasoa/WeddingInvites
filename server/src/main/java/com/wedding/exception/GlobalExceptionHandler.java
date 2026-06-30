@@ -27,21 +27,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CardException.class)
     public ResponseEntity<Map<String, String>> handleCardException(CardException ex) {
-        log.warn("Card declined: code={} message={}", ex.getCode(), ex.getMessage());
+        log.warn("Card declined: message={}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
                 .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<Map<String, String>> handleInvalidRequestException(InvalidRequestException ex) {
-        log.warn("Invalid Stripe request: param={} message={}", ex.getParam(), ex.getMessage());
+        log.warn("Invalid Stripe request: message={}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, String>> handleAuthenticationException(AuthenticationException ex) {
-        log.error("Stripe authentication failed — check API key", ex);
+        log.error("Stripe authentication failed", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Payment service configuration error."));
     }
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(StripeException.class)
     public ResponseEntity<Map<String, String>> handleStripeException(StripeException ex) {
-        log.error("Unexpected Stripe error: requestId={}", ex.getRequestId(), ex);
+        log.error("Unexpected Stripe error: ", ex);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(Map.of("error", ex.getMessage()));
     }

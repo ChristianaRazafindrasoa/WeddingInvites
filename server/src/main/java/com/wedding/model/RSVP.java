@@ -18,6 +18,8 @@ public class RSVP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "rsvp_id")
     private Integer id;
+    @Column(name = "wedding_id")
+    private Integer weddingId = 1;
     @Column(name = "token")
     private String token;
     @OneToOne

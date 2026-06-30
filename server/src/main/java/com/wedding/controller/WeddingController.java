@@ -22,12 +22,14 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.wedding.data.NoteRepository;
 import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
 import com.wedding.domain.WeddingService;
 import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
 import com.wedding.exception.WeddingException;
+import com.wedding.model.Note;
 import com.wedding.model.Photo;
 import com.wedding.model.WeddingInfo;
 import software.amazon.awssdk.regions.Region;
@@ -44,6 +46,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
     private PhotoRepository photoRepo;
+    private NoteRepository noteRepo;
     private final WeddingService weddingService;
     private final S3Presigner s3Presigner;
     private final String bucketName;
@@ -52,6 +55,7 @@ public class WeddingController {
     public WeddingController(
             WeddingInfoRepository infoRepo,
             PhotoRepository photoRepo,
+            NoteRepository noteRepo,
             WeddingService weddingService,
             @Value("${stripe.secret.key}") String stripeApiKey,
             @Value("${aws.region}") String region,
@@ -59,6 +63,7 @@ public class WeddingController {
             @Value("${app.base-url}") String baseUrl) {
         this.infoRepo = infoRepo;
         this.photoRepo = photoRepo;
+        this.noteRepo = noteRepo;
         this.weddingService = weddingService;
         Stripe.apiKey = stripeApiKey;
         this.s3Presigner = S3Presigner.builder()
@@ -183,8 +188,8 @@ public class WeddingController {
             @RequestBody Map<String, String> body) {
         String s3Key = body.get("s3Key");
         String token = body.get("token");
-        check(s3Key != null, "key cannot be null");
-        check(token != null, "token cannot be null");
+        check(s3Key != null, "Key cannot be null");
+        check(token != null, "Token cannot be null");
         String uploadedBy = null;
         RSVPResponse response = weddingService.findByToken(token);
         String plusOne = response.plusOneName();
@@ -196,6 +201,27 @@ public class WeddingController {
         Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, true);
         photoRepo.save(photo);
         return ResponseEntity.ok(Map.of("message", "Photo saved successfully"));
+    }
+
+    @GetMapping("/guestbook")
+    public List<Note> getNoteEntries() {
+        return noteRepo.findAll();
+    }
+
+    @PostMapping("/guestbook")
+    public ResponseEntity<Note> postNoteEntry(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String message = body.get("message");
+        check(token != null && !token.isBlank(), "Token cannot be null");
+        check(message != null && !message.isBlank(), "Message cannot be null");
+        RSVPResponse response = weddingService.findByToken(token);
+        check(response.mainGuestName() != null, "Main guest not found");
+        String name = response.mainGuestName();
+        if (response.hasPlusOne()) {
+            name += " & " + response.plusOneName();
+        }
+        Note note = noteRepo.save(new Note(name, message));
+        return ResponseEntity.status(HttpStatus.OK).body(note);
     }
 
     private void check(boolean expression, String message) {

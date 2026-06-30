@@ -22,6 +22,10 @@ function Invitation() {
   const [donating, setDonating] = useState(false);
   const [donationError, setDonationError] = useState(null);
   const [noToken, setNoToken] = useState(false);
+  const [guestMessage, setGuestMessage] = useState("");
+  const [guestbookSuccess, setGuestbookSuccess] = useState(false);
+  const [guestbookError, setGuestbookError] = useState(null);
+  const [submittingNote, setSubmittingNote] = useState(false);
 
   useEffect(() => {
     fetch("/api/info")
@@ -38,19 +42,23 @@ function Invitation() {
     fetch(`/api/rsvp?token=${encodeURIComponent(urlToken)}`)
       .then((res) => {
         if (!res.ok) {
-          throw new Error("Token not found");
+          setNoToken(true);
+          return null;
         }
         return res.json();
       })
       .then((data) => {
+        if (!data) return;
         setMainGuest(data.mainGuestName || "");
         setPlusOne(data.plusOneName || "");
         setAllowPlusOne(data.hasPlusOne === true);
       })
+      .catch(() => setNoToken(true))
 
     fetch("/api/photo-gallery")
       .then((res) => res.json())
-      .then((photos) => setPhotos(photos))
+      .then((photos) => setPhotos(photos));
+
   }, []);
   
   const submitRSVP = async (attending) => {
@@ -176,6 +184,33 @@ function Invitation() {
     setUploading(false);
     setShowUpload(true);
   }
+
+  const submitGuestbook = async () => {
+    if (!guestMessage.trim()) {
+      setGuestbookError("Please write a message before submitting.");
+      return;
+    }
+    setSubmittingNote(true);
+    setGuestbookError(null);
+    try {
+      const res = await fetch("/api/guestbook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, message: guestMessage }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setGuestbookError(data.error || "Something went wrong. Please try again.");
+        return;
+      }
+      setGuestMessage("");
+      setGuestbookSuccess(true);
+    } catch {
+      setGuestbookError("Unable to submit. Please try again.");
+    } finally {
+      setSubmittingNote(false);
+    }
+  };
 
   const handleDonation = async () => {
     if (amount <= 0) {
@@ -407,6 +442,36 @@ function Invitation() {
             <p>Thank you for contributing to our honeymoon fund. 🤍</p>
             <p>- {wedding.groomName} & {wedding.brideName}</p>
             <button onClick={() => {setShowSuccess(false); setAmount("");}}>Close</button>
+          </div>
+        )}
+      </div>
+      <h2>Guestbook</h2>
+      <div className="guestbook">
+        <p>Leave a heartfelt note for the happy couple.</p>
+        <textarea
+          className="guestbook-textarea"
+          placeholder="Write your message here..."
+          value={guestMessage}
+          onChange={(e) => {
+            setGuestMessage(e.target.value);
+            e.target.style.height = "auto";
+            e.target.style.height = e.target.scrollHeight + "px";
+          }}
+        />
+        <button onClick={submitGuestbook} disabled={submittingNote}>
+          {submittingNote ? "Submitting..." : "Submit"}
+        </button>
+        {guestbookError && (
+          <div className="banner">
+            {guestbookError}<br/><br/>
+            <button onClick={() => setGuestbookError(null)}>Close</button>
+          </div>
+        )}
+        {guestbookSuccess && (
+          <div className="banner">
+            <p>Your message has been added to the guestbook.</p>
+            <p>- {wedding.groomName} & {wedding.brideName}</p>
+            <button onClick={() => setGuestbookSuccess(false)}>Close</button>
           </div>
         )}
       </div>

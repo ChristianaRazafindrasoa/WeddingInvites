@@ -14,6 +14,8 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "guest_id")
     private Integer id;
+    @Column(name = "wedding_id")
+    private Integer weddingId = 1;
     @Column(name = "name")
     private String fullName;
     @Column(name = "phone")

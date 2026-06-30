@@ -1,6 +1,7 @@
 package com.wedding;
 
 import com.wedding.controller.WeddingController;
+import com.wedding.data.NoteRepository;
 import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
 import com.wedding.domain.WeddingService;
@@ -42,9 +43,10 @@ class WeddingControllerTest {
     void setUp() {
         WeddingInfoRepository infoRepo = mock(WeddingInfoRepository.class);
         photoRepo = mock(PhotoRepository.class);
+        NoteRepository noteRepo = mock(NoteRepository.class);
         weddingService = mock(WeddingService.class);
         controller = new WeddingController(
-                infoRepo, photoRepo, weddingService,
+                infoRepo, photoRepo, noteRepo, weddingService,
                 "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000");
         s3Presigner = mock(S3Presigner.class);
         ReflectionTestUtils.setField(controller, "s3Presigner", s3Presigner);
