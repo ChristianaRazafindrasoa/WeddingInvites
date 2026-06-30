@@ -218,12 +218,9 @@ public class WeddingController {
         String message = body.get("message");
         check(token != null && !token.isBlank(), "Token cannot be null");
         check(message != null && !message.isBlank(), "Message cannot be null");
-        RSVPResponse response = weddingService.findByToken(token);
-        check(response.mainGuestName() != null, "Main guest not found");
-        String name = response.mainGuestName();
-        if (response.hasPlusOne()) {
-            name += " & " + response.plusOneName();
-        }
+        weddingService.findByToken(token);
+        String providedName = body.get("name");
+        String name = (providedName != null && !providedName.isBlank()) ? providedName : "Anonymous";
         Note note = noteRepo.save(new Note(name, message));
         return ResponseEntity.status(HttpStatus.OK).body(note);
     }

@@ -22,6 +22,7 @@ function Invitation() {
   const [donating, setDonating] = useState(false);
   const [donationError, setDonationError] = useState(null);
   const [noToken, setNoToken] = useState(false);
+  const [guestName, setGuestName] = useState("");
   const [guestMessage, setGuestMessage] = useState("");
   const [guestbookSuccess, setGuestbookSuccess] = useState(false);
   const [guestbookError, setGuestbookError] = useState(null);
@@ -196,7 +197,7 @@ function Invitation() {
       const res = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, message: guestMessage }),
+        body: JSON.stringify({ token, message: guestMessage, name: guestName.trim() || "" }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -204,6 +205,7 @@ function Invitation() {
         return;
       }
       setGuestMessage("");
+      setGuestName("");
       setGuestbookSuccess(true);
     } catch {
       setGuestbookError("Unable to submit. Please try again.");
@@ -453,6 +455,12 @@ function Invitation() {
       <h2>Guestbook</h2>
       <div className="guestbook">
         <p>Leave a heartfelt note for the happy couple.</p>
+        <input
+          className="name"
+          placeholder="Your name (optional)"
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+        />
         <textarea
           className="guestbook-textarea"
           placeholder="Write your message here..."

@@ -347,6 +347,12 @@ p {
   margin-bottom: 160px;
 }
 
+.guestbook .name {
+  width: 50%;
+  font-size: 1rem;
+  padding: 10px 16px;
+}
+
 .guestbook-textarea {
   width: 80%;
   display: block;
