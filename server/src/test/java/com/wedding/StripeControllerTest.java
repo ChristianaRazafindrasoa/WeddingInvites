@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.stripe.exception.ApiConnectionException;
@@ -27,6 +28,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Sql(scripts = "classpath:sql/set-known-good-state.sql")
 class StripeControllerTest {
     @Autowired
     private MockMvc mockMvc;

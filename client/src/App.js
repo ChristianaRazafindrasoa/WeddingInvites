@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./index.css";
-import AdminPanel from "./Admin";
+import AdminPanel, { ErrorBoundary } from "./Admin";
 
 function Invitation() {
   const [wedding, setWedding] = useState(null);
@@ -52,13 +52,11 @@ function Invitation() {
         setMainGuest(data.mainGuestName || "");
         setPlusOne(data.plusOneName || "");
         setAllowPlusOne(data.hasPlusOne === true);
+        fetch("/api/photo-gallery")
+          .then((res) => res.json())
+          .then((photos) => setPhotos(photos));
       })
-      .catch(() => setNoToken(true))
-
-    fetch("/api/photo-gallery")
-      .then((res) => res.json())
-      .then((photos) => setPhotos(photos));
-
+      .catch(() => setNoToken(true));
   }, []);
   
   const submitRSVP = async (attending) => {
@@ -81,7 +79,8 @@ function Invitation() {
           isAccepted: attending,
         }),
       });
-      setResponse(await response.json());
+      const data = await response.json();
+      setResponse({ message: data.message || data.error || "RSVP failed. Please try again later." });
       setShowMessage(true);
     } catch {
       setResponse({ message: "RSVP failed. Please try again later." });
@@ -136,7 +135,8 @@ function Invitation() {
             },
             body: JSON.stringify({
               fileName: file.name,
-              contentType: file.type
+              contentType: file.type,
+              token: urlToken
             })
           }
         );
@@ -251,7 +251,7 @@ function Invitation() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("success") === "true") {
+    if (!noToken && params.get("success") === "true") {
       setShowSuccess(true);
       const sessionId = params.get("id");
       const token = params.get("token");
@@ -266,7 +266,7 @@ function Invitation() {
       .catch(err => { console.error(err); });
       window.history.replaceState({}, "", `/?token=${token}`);
     }
-  }, []);
+  }, [noToken]);
 
   useEffect(() => {
     if (!showAllPhotos) return;
@@ -279,15 +279,17 @@ function Invitation() {
     return () => { if (el) observer.unobserve(el); };
   }, [showAllPhotos, visibleCount]);
 
-  if (noToken) {
-    return <h2>Please contact us for your personal link...</h2>;
-  }
-
   if (!wedding) {
     return <h2>Loading wedding data...</h2>;
   }
 
   return (
+    <>
+      {noToken && (
+        <div className="no-token-banner">
+          Token not found. Please contact us for your personal invitation link.
+        </div>
+      )}
     <div className="container">
       <div className="hero">
         <div className="hero-overlay">
@@ -333,14 +335,16 @@ function Invitation() {
               onChange={(e) => setPlusOne(e.target.value)}
               readOnly={!!token} />
           )}
-          <button onClick={() => submitRSVP(true)}>Accept</button>
-          <button onClick={() => submitRSVP(false)}>Decline</button>
-          {showMessage && 
-            <div className="banner">
-              {response.message} <br></br>
-              <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
-              <button onClick={() => setShowMessage(false)}>Close</button>
-            </div>} 
+          <>
+              <button onClick={() => submitRSVP(true)} disabled={noToken}>Accept</button>
+              <button onClick={() => submitRSVP(false)} disabled={noToken}>Decline</button>
+              {showMessage &&
+                <div className="banner">
+                  {response.message} <br></br>
+                  <p>- {wedding.groomName} & {wedding.brideName} 🤍</p> <br></br>
+                  <button onClick={() => setShowMessage(false)}>Close</button>
+                </div>}
+            </>
         </div>
       </div>
 
@@ -396,14 +400,14 @@ function Invitation() {
           multiple
           accept="image/*"
           onChange={handleFileChange}/>
-        <label htmlFor={uploading ? undefined : "file-input"} 
-            className="upload-btn" style={uploading ? {opacity: 0.7, cursor: "default"} : {}}>
+        <label htmlFor={uploading || noToken ? undefined : "file-input"}
+            className="upload-btn" style={uploading || noToken ? {opacity: 0.7, cursor: "default"} : {}}>
           {uploading ? "Uploading..." : "Upload"}
         </label>
           {showUpload && 
             <div className="banner">
               {response.message} <br></br>
-              <p>- {wedding.groomName} & {wedding.brideName}</p> <br></br>
+              <p>- {wedding.groomName} & {wedding.brideName} 🤍</p> <br></br>
               <button onClick={() => { setShowUpload(false);                   
                   if (fileInputRef.current) {
                     fileInputRef.current.value = "";
@@ -428,19 +432,20 @@ function Invitation() {
             }}
             onChange={(e) => setAmount(e.target.value)}/>
         </div>
-        <button onClick={handleDonation} disabled={donating}>
+        <button onClick={handleDonation} disabled={donating || noToken}>
           {donating ? "Contributing..." : "Contribute"}</button>
         {donationError && (
           <div className="banner">
             {donationError}<br/><br/>
+            <p>- {wedding.groomName} & {wedding.brideName} 🤍</p> <br></br>
             <button onClick={() => setDonationError(null)}>Close</button>
           </div>
         )}
         {showSuccess && (
           <div className="banner">
             <p>Payment received: ${amount}</p>
-            <p>Thank you for contributing to our honeymoon fund. 🤍</p>
-            <p>- {wedding.groomName} & {wedding.brideName}</p>
+            <p>Thank you for contributing to our honeymoon fund.</p>
+            <p>- {wedding.groomName} & {wedding.brideName} 🤍</p>
             <button onClick={() => {setShowSuccess(false); setAmount("");}}>Close</button>
           </div>
         )}
@@ -458,27 +463,53 @@ function Invitation() {
             e.target.style.height = e.target.scrollHeight + "px";
           }}
         />
-        <button onClick={submitGuestbook} disabled={submittingNote}>
+        <button onClick={submitGuestbook} disabled={submittingNote || noToken}>
           {submittingNote ? "Submitting..." : "Submit"}
         </button>
         {guestbookError && (
           <div className="banner">
             {guestbookError}<br/><br/>
+            <p>- {wedding.groomName} & {wedding.brideName} 🤍</p> <br></br>
             <button onClick={() => setGuestbookError(null)}>Close</button>
           </div>
         )}
         {guestbookSuccess && (
           <div className="banner">
             <p>Your message has been added to the guestbook.</p>
-            <p>- {wedding.groomName} & {wedding.brideName}</p>
+            <p>- {wedding.groomName} & {wedding.brideName} 🤍</p>
             <button onClick={() => setGuestbookSuccess(false)}>Close</button>
           </div>
         )}
       </div>
     </div>
+    </>
   );
 }
 
+function NotFound() {
+  return (
+    <div className="container">
+      <div className="hero">
+        <div className="hero-overlay">
+          <h1>Page Not Found</h1>
+          <h3>Contact us for your personal invitation link. 🤍</h3>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const knownPaths = ["/", "/admin"];
+
 export default function App() {
-  return window.location.pathname === "/admin" ? <AdminPanel /> : <Invitation />;
+  const path = window.location.pathname;
+  return (
+    <ErrorBoundary>
+      {!knownPaths.includes(path)
+        ? <NotFound />
+        : path === "/admin"
+        ? <AdminPanel />
+        : <Invitation />}
+    </ErrorBoundary>
+  );
 }

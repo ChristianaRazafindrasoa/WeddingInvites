@@ -36,7 +36,7 @@ class RSVPControllerTest {
                 .andExpect(jsonPath("$.plusOneName")
                         .value("Bar Test"))
                 .andExpect(jsonPath("$.message")
-                        .value("Thank you for attending. 🤍"));
+                        .value("Thank you for attending."));
     }
 
     @Test

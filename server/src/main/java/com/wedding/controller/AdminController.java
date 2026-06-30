@@ -9,9 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,27 +24,30 @@ import com.wedding.model.Guest;
 import com.wedding.model.RSVP;
 
 @RestController
-@RequestMapping("admin")
 @CrossOrigin(origins = "${app.cors.origins}")
-public class AdminController {
+public class AdminController implements ErrorController {
     private final AdminService adminService;
     private final String adminPassword;
 
     public AdminController(
-            AdminService adminService, 
+            AdminService adminService,
             @Value("${admin.password}") String adminPassword) {
         this.adminService = adminService;
         this.adminPassword = adminPassword;
     }
 
-    @GetMapping
+    @GetMapping(value = {"/", "/{path:[^\\.]*}"})
     public void index(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        request.getRequestDispatcher("/index.html")
-            .forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
-    @GetMapping("/guests")
-    public ResponseEntity<List<Guest>> getAllGuests (
+    @RequestMapping("/error")
+    public void handleError(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        request.getRequestDispatcher("/index.html").forward(request, response);
+    }
+
+    @GetMapping("/admin/guests")
+    public ResponseEntity<List<Guest>> getAllGuests(
         @RequestHeader(value = "Authorization", required = false) String auth) {
         if (!isAuthorized(auth)) {
             throw new WeddingException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -51,8 +55,8 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getInvitedGuests());
     }
 
-    @GetMapping("/rsvps")
-    public ResponseEntity<List<RSVP>> getAllRsvps (
+    @GetMapping("/admin/rsvps")
+    public ResponseEntity<List<RSVP>> getAllRsvps(
         @RequestHeader(value = "Authorization", required = false) String auth) {
         if (!isAuthorized(auth)) {
             throw new WeddingException(HttpStatus.UNAUTHORIZED, "Unauthorized");
@@ -60,7 +64,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getCreatedRSVPs());
     }
 
-    @PostMapping("/login")
+    @PostMapping("/admin/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) {
         if (!adminPassword.equals(body.get("password"))) {
             throw new WeddingException(HttpStatus.UNAUTHORIZED, "Unauthorized");

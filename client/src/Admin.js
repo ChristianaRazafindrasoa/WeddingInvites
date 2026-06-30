@@ -1,5 +1,21 @@
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState } from "react";
 import "./index.css";
+
+export class ErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="banner">
+          <p>Something went wrong. Please try refreshing the page or contact us for help. 🤍</p>
+          <button onClick={() => window.location.reload()}>Close</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function AdminPanel() {
   const [guests, setGuests] = useState([]);

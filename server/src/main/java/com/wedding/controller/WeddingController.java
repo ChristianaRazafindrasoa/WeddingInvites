@@ -95,6 +95,8 @@ public class WeddingController {
             @RequestBody Map<String, Object> payload) throws StripeException{
         long amountInCents = weddingService.validateCheckout((String) payload.get("amount"));
         String token = (String) payload.get("token");
+        check(token != null && !token.isBlank(), "Token is required");
+        weddingService.findByToken(token);
         String successUrl = token != null
             ? baseUrl + "/?token=" + token + "&success=true&id={CHECKOUT_SESSION_ID}"
             : baseUrl + "/?success=true&id={CHECKOUT_SESSION_ID}";
@@ -162,6 +164,9 @@ public class WeddingController {
     @PostMapping("/photos/upload")
     public ResponseEntity<Map<String, String>> putPresignedURL(
             @RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        check(token != null && !token.isBlank(), "Token is required");
+        weddingService.findByToken(token);
         String contentType = body.get("contentType");
         String fileName = body.get("fileName");
         String key = "test/" + UUID.randomUUID() + "-" + fileName;
@@ -195,7 +200,6 @@ public class WeddingController {
         String plusOne = response.plusOneName();
         uploadedBy = response.mainGuestName();
         if (plusOne != null) {
-            uploadedBy = response.mainGuestName().split(" ")[0];
             uploadedBy += " & " + plusOne;
         }
         Photo photo = new Photo(s3Key, LocalDateTime.now(), uploadedBy, true);

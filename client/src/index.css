@@ -403,8 +403,8 @@ p {
 }
 
 .registry-amount {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 160px;
   margin: 1px auto;
   display: flex;
   justify-content: center;
@@ -413,18 +413,32 @@ p {
 
 .dollar-sign {
   color: var(--pink);
-  font-size: 3rem;
+  font-size: 3.5rem;
 }
 
 .amount {
-  width: 55px;
+  width: 150px;
   padding: 0;
   border: none;
   background: transparent;
   text-align: center;
-  font-size: 3.2rem;
+  font-size: 3.5rem;
   font-weight: 500;
   color: var(--white);
+}
+
+.no-token-banner {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--pink);
+  color: var(--blue);
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.2rem;
+  letter-spacing: 0.02em;
 }
 
 .banner {
@@ -609,11 +623,11 @@ p {
   }
 
   .amount {
-    font-size: 2rem;
+    font-size: 3rem;
   }
 
   .dollar-sign {
-    font-size: 2rem;
+    font-size: 3rem;
   }
 
   .gallery-img {
@@ -624,6 +638,10 @@ p {
   .photo-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
+  }
+
+  .guestbook-textarea {
+    width: 95%;
   }
 
   .banner {

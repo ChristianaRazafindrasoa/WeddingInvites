@@ -41,6 +41,7 @@ public class WeddingService {
             rsvp.getMainGuest().getFullName(),
             rsvp.getPlusOne() != null ? rsvp.getPlusOne().getFullName() : null,
             rsvp.getMainGuest().hasPlusOne(),
+            rsvp.getRespondedAt() != null,
             Optional.empty()
         );
     }
@@ -57,12 +58,13 @@ public class WeddingService {
         }
         RSVP saved = persist(rsvp, mainGuest, request);
         String message = request.isAccepted() ?
-            "Thank you for attending. 🤍" :
-            "Thank you, we'll miss you. 🤍";
+            "Thank you for attending." :
+            "Thank you, we'll miss you.";
         return new RSVPResponse(
             saved.getMainGuest().getFullName(),
             saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
             saved.getMainGuest().hasPlusOne(),
+            true,
             Optional.of(message));
     }
 
