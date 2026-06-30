@@ -1,5 +1,6 @@
 package com.wedding;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -18,28 +19,28 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.wedding.data.GuestRepository;
 import com.wedding.data.RSVPRepository;
-import com.wedding.domain.RSVPService;
+import com.wedding.domain.WeddingService;
 import com.wedding.dto.RSVPRequest;
 import com.wedding.exception.WeddingException;
 import com.wedding.model.Guest;
 import com.wedding.model.RSVP;
 
 @DataJpaTest
-public class RSVPServiceTest {
+public class WeddingServiceTest {
     @Autowired
     private PlatformTransactionManager txManager;
     @Autowired
-    private RSVPRepository rsvpRepo;    
+    private RSVPRepository rsvpRepo;
     @Autowired
     private GuestRepository guestRepo;
-    private RSVPService service;
+    private WeddingService service;
     private Guest guestOne;
     private Guest guestTwo;
     private Guest guestThree;
 
     @BeforeEach
     void setUp() {
-        service = new RSVPService(guestRepo, rsvpRepo, txManager);
+        service = new WeddingService(guestRepo, rsvpRepo, txManager);
         guestOne = guestRepo.save(new Guest(1, "John Doe", "1112223333", true, false));
         guestTwo = guestRepo.save(new Guest(2, "Jane Doe", "4445556666", false, false));
         guestThree = guestRepo.save(new Guest(3, "Janette Doe", "4445556666", false, false));
@@ -75,13 +76,40 @@ public class RSVPServiceTest {
         RSVPRepository spyRsvpRepo = mock(RSVPRepository.class);
         when(spyRsvpRepo.findByToken(any())).thenAnswer(inv -> rsvpRepo.findByToken(inv.getArgument(0)));
         doThrow(new RuntimeException("simulated failure")).when(spyRsvpRepo).save(any());
-        RSVPService spyRsvpService = new RSVPService(guestRepo, spyRsvpRepo, txManager);
+        WeddingService spyService = new WeddingService(guestRepo, spyRsvpRepo, txManager);
         RSVPRequest request = new RSVPRequest("test3-token", guestThree.getFullName(), null, true);
-        assertThrows(RuntimeException.class, () -> spyRsvpService.submit(request));
+        assertThrows(RuntimeException.class, () -> spyService.submit(request));
         Guest updatedGuest = guestRepo.findById(guestThree.getId()).orElseThrow();
         RSVP updatedRSVP = rsvpRepo.findByToken("test3-token").orElseThrow();
         assertFalse(updatedGuest.isAttending());
         assertFalse(updatedRSVP.isAccepted());
         assertNull(updatedRSVP.getRespondedAt());
+    }
+
+    @Test
+    void validateCheckoutReturnsParsedAmountWhenValid() {
+        long result = service.validateCheckout("50");
+        assertEquals(50L, result);
+    }
+
+    @Test
+    void validateCheckoutThrowsWhenAmountMissing() {
+        WeddingException ex = assertThrows(WeddingException.class,
+                () -> service.validateCheckout(null));
+        assertEquals("Amount is required.", ex.getMessage());
+    }
+
+    @Test
+    void validateCheckoutThrowsWhenAmountNotNumeric() {
+        WeddingException ex = assertThrows(WeddingException.class,
+                () -> service.validateCheckout("abc"));
+        assertEquals("Amount must be a valid number.", ex.getMessage());
+    }
+
+    @Test
+    void validateCheckoutThrowsWhenAmountNotPositive() {
+        WeddingException ex = assertThrows(WeddingException.class,
+                () -> service.validateCheckout("0"));
+        assertEquals("Minimum donation amount is $1", ex.getMessage());
     }
 }

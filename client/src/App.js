@@ -20,6 +20,7 @@ function Invitation() {
   const [showMessage, setShowMessage] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [donating, setDonating] = useState(false);
+  const [donationError, setDonationError] = useState(null);
   const [noToken, setNoToken] = useState(false);
 
   useEffect(() => {
@@ -181,6 +182,7 @@ function Invitation() {
       return;
     }
     setDonating(true);
+    setDonationError(null);
     try {
       const response = await fetch("/api/honeymoon-fund", {
         method: "POST",
@@ -193,9 +195,15 @@ function Invitation() {
           name: mainGuest
         })
       });
-      const session = await response.json();
-      window.location.href = session.url;
+      const data = await response.json();
+      if (!response.ok) {
+        setDonationError(data.error || "Something went wrong. Please try again.");
+        setDonating(false);
+        return;
+      }
+      window.location.href = data.url;
     } catch {
+      setDonationError("Unable to process payment. Please try again.");
       setDonating(false);
     }
   }
@@ -387,6 +395,12 @@ function Invitation() {
         </div>
         <button onClick={handleDonation} disabled={donating}>
           {donating ? "Contributing..." : "Contribute"}</button>
+        {donationError && (
+          <div className="banner">
+            {donationError}<br/><br/>
+            <button onClick={() => setDonationError(null)}>Close</button>
+          </div>
+        )}
         {showSuccess && (
           <div className="banner">
             <p>Payment received: ${amount}</p>

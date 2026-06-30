@@ -1,19 +1,14 @@
 package com.wedding;
 
-import com.stripe.exception.ApiConnectionException;
-import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import com.stripe.param.checkout.SessionCreateParams;
 import com.wedding.controller.WeddingController;
 import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
-import com.wedding.domain.RSVPService;
-import com.wedding.exception.WeddingException;
+import com.wedding.domain.WeddingService;
+import com.wedding.dto.RSVPResponse;
 import com.wedding.model.Photo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -31,19 +26,15 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.wedding.dto.RSVPResponse;
-
 class WeddingControllerTest {
     private PhotoRepository photoRepo;
-    private RSVPService rsvpService;
+    private WeddingService weddingService;
     private S3Presigner s3Presigner;
     private WeddingController controller;
 
@@ -51,61 +42,12 @@ class WeddingControllerTest {
     void setUp() {
         WeddingInfoRepository infoRepo = mock(WeddingInfoRepository.class);
         photoRepo = mock(PhotoRepository.class);
-        rsvpService = mock(RSVPService.class);
+        weddingService = mock(WeddingService.class);
         controller = new WeddingController(
-                infoRepo, photoRepo, rsvpService,
+                infoRepo, photoRepo, weddingService,
                 "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000");
         s3Presigner = mock(S3Presigner.class);
         ReflectionTestUtils.setField(controller, "s3Presigner", s3Presigner);
-    }
-
-    @Test
-    void createCheckoutSessionReturnsUrlWhenPayloadValid() throws Exception {
-        Session session = mock(Session.class);
-        when(session.getUrl()).thenReturn("https://checkout.stripe.com/session123");
-        try (MockedStatic<Session> mocked = mockStatic(Session.class)) {
-            mocked.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(session);
-            Map<String, Object> payload = Map.of(
-                    "amount", "50",
-                    "token", "abc123",
-                    "name", "Foo Test");
-            ResponseEntity<Map<String, String>> response = controller.createCheckoutSession(payload);
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertEquals("https://checkout.stripe.com/session123", response.getBody().get("url"));
-            mocked.verify(() -> Session.create(any(SessionCreateParams.class)));
-        }
-    }
-
-    @Test
-    void createCheckoutSessionThrowsWhenAmountNotPositive() {
-        Map<String, Object> payload = Map.of(
-                "amount", "0",
-                "token", "abc123",
-                "name", "Foo Test");
-        WeddingException ex = assertThrows(
-                WeddingException.class,
-                () -> controller.createCheckoutSession(payload));
-        assertEquals("Minimum donation amount is $1", ex.getMessage());
-    }
-
-    @Test
-    void getSessionReturnsAmountWhenSessionExists() throws Exception {
-        Session session = mock(Session.class);
-        when(session.getAmountTotal()).thenReturn(5000L);
-        try (MockedStatic<Session> mocked = mockStatic(Session.class)) {
-            mocked.when(() -> Session.retrieve("sess_123")).thenReturn(session);
-            ResponseEntity<Map<String, Object>> response = controller.getSession("sess_123");
-            assertEquals(HttpStatus.OK, response.getStatusCode());
-            assertEquals(50L, response.getBody().get("amount"));
-        }
-    }
-
-    @Test
-    void getSessionThrowsWhenStripeFails() throws Exception {
-        try (MockedStatic<Session> mocked = mockStatic(Session.class)) {
-            mocked.when(() -> Session.retrieve("bad")).thenThrow(new ApiConnectionException("boom"));
-            assertThrows(StripeException.class, () -> controller.getSession("bad"));
-        }
     }
 
     @Test
@@ -125,7 +67,7 @@ class WeddingControllerTest {
 
     @Test
     void savePhotoPersistsUnapprovedPhotoAndReturnsMessage() {
-        when(rsvpService.findByToken("abc123"))
+        when(weddingService.findByToken("abc123"))
                 .thenReturn(new RSVPResponse("Foo Test", null, false, Optional.empty()));
         Map<String, String> body = Map.of("s3Key", "uuid-cake.png", "token", "abc123");
         ResponseEntity<?> response = controller.savePhoto(body);

@@ -24,7 +24,7 @@ import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import com.wedding.data.PhotoRepository;
 import com.wedding.data.WeddingInfoRepository;
-import com.wedding.domain.RSVPService;
+import com.wedding.domain.WeddingService;
 import com.wedding.dto.RSVPRequest;
 import com.wedding.dto.RSVPResponse;
 import com.wedding.exception.WeddingException;
@@ -44,7 +44,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class WeddingController {
     private WeddingInfoRepository infoRepo;
     private PhotoRepository photoRepo;
-    private final RSVPService rsvpService;
+    private final WeddingService weddingService;
     private final S3Presigner s3Presigner;
     private final String bucketName;
     private final String baseUrl;
@@ -52,14 +52,14 @@ public class WeddingController {
     public WeddingController(
             WeddingInfoRepository infoRepo,
             PhotoRepository photoRepo,
-            RSVPService rsvpService,
+            WeddingService weddingService,
             @Value("${stripe.secret.key}") String stripeApiKey,
             @Value("${aws.region}") String region,
             @Value("${aws.bucket}") String bucketName,
             @Value("${app.base-url}") String baseUrl) {
         this.infoRepo = infoRepo;
         this.photoRepo = photoRepo;
-        this.rsvpService = rsvpService;
+        this.weddingService = weddingService;
         Stripe.apiKey = stripeApiKey;
         this.s3Presigner = S3Presigner.builder()
             .region(Region.of(region))
@@ -75,30 +75,32 @@ public class WeddingController {
 
     @GetMapping("/rsvp")
     public ResponseEntity<RSVPResponse> getByToken(@RequestParam String token) {
-        RSVPResponse response = rsvpService.findByToken(token);
+        RSVPResponse response = weddingService.findByToken(token);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/rsvp")
     public ResponseEntity<RSVPResponse> submit(@RequestBody RSVPRequest request) {
-        RSVPResponse response = rsvpService.submit(request);
+        RSVPResponse response = weddingService.submit(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/honeymoon-fund")
     public ResponseEntity<Map<String, String>> createCheckoutSession(
             @RequestBody Map<String, Object> payload) throws StripeException{
-        Long amountInCents = Long.valueOf(payload.get("amount").toString());
-        if (amountInCents <= 0) {
-            throw new WeddingException(HttpStatus.BAD_REQUEST, "Minimum donation amount is $1");
-        }
-
-        String successUrl = baseUrl + "/?token=" +
-            payload.get("token") + "&success=true&id={CHECKOUT_SESSION_ID}";
+        long amountInCents = weddingService.validateCheckout((String) payload.get("amount"));
+        String token = (String) payload.get("token");
+        String successUrl = token != null
+            ? baseUrl + "/?token=" + token + "&success=true&id={CHECKOUT_SESSION_ID}"
+            : baseUrl + "/?success=true&id={CHECKOUT_SESSION_ID}";
+        String cancelUrl = token != null
+            ? baseUrl + "/?token=" + token
+            : baseUrl + "/";
+            
         SessionCreateParams params = SessionCreateParams.builder()
             .setMode(SessionCreateParams.Mode.PAYMENT)
             .setSuccessUrl(successUrl)
-            .putMetadata("name", payload.get("name").toString())
+            .setCancelUrl(cancelUrl)
             .addLineItem(
                 SessionCreateParams.LineItem.builder()
                     .setQuantity(1L)
@@ -124,8 +126,8 @@ public class WeddingController {
     public ResponseEntity<Map<String, Object>> getSession (
             @PathVariable String sessionId) throws StripeException {
         Session session = Session.retrieve(sessionId);
-        Long amountInCents = session.getAmountTotal();
-        return ResponseEntity.ok(Map.of("amount", amountInCents / 100L));
+        long amount = session.getAmountTotal();
+        return ResponseEntity.ok(Map.of("amount", amount / 100L));
     }
 
     @GetMapping("/photo-gallery")
@@ -184,7 +186,7 @@ public class WeddingController {
         check(s3Key != null, "key cannot be null");
         check(token != null, "token cannot be null");
         String uploadedBy = null;
-        RSVPResponse response = rsvpService.findByToken(token);
+        RSVPResponse response = weddingService.findByToken(token);
         String plusOne = response.plusOneName();
         uploadedBy = response.mainGuestName();
         if (plusOne != null) {

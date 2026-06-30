@@ -19,15 +19,15 @@ import com.wedding.model.Guest;
 import com.wedding.model.RSVP;
 
 @Service
-public class RSVPService {
+public class WeddingService {
     private final GuestRepository guestRepo;
     private final RSVPRepository rsvpRepo;
     private final TransactionTemplate transaction;
-    private final Logger log = LoggerFactory.getLogger(RSVPService.class);
+    private final Logger log = LoggerFactory.getLogger(WeddingService.class);
 
-    public RSVPService(
-            GuestRepository guestRepo, 
-            RSVPRepository rsvpRepo, 
+    public WeddingService(
+            GuestRepository guestRepo,
+            RSVPRepository rsvpRepo,
             PlatformTransactionManager txManager) {
         this.guestRepo = guestRepo;
         this.rsvpRepo = rsvpRepo;
@@ -93,5 +93,21 @@ public class RSVPService {
                 throw throwable;
             }
         });
+    }
+
+    public long validateCheckout(String amount) {
+        if (amount == null) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, "Amount is required.");
+        }
+        long amountInCents;
+        try {
+            amountInCents = Long.parseLong(amount);
+        } catch (NumberFormatException e) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, "Amount must be a valid number.");
+        }
+        if (amountInCents <= 0) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, "Minimum donation amount is $1");
+        }
+        return amountInCents;
     }
 }
