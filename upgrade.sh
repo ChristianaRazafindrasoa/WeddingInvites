@@ -47,22 +47,27 @@ unzip -q "$ZIP_NAME" -d .
 rm -f ~/wedding-*.zip
 
 log "Syncing application config"
-for dir in ~/wedding-*/; do
-  if [ "\$dir" != ~/"$NEW_DIR"/ ] && [ -f "\${dir}application.properties" ]; then
-    cp "\${dir}application.properties" ~/"$NEW_DIR/application.properties"
-    echo "  Config copied from \$dir"
-    break
-  fi
-done
-if [ ! -f ~/"$NEW_DIR/application.properties" ]; then
-  echo "  WARNING: no application.properties found — place one in ~/$NEW_DIR/ before starting"
+if [ -f ~/app/application.properties ]; then
+  cp ~/app/application.properties ~/"$NEW_DIR/application.properties"
+  echo "  Config copied from ~/app/application.properties"
+else
+  echo "  WARNING: no ~/app/application.properties found — place one there before starting"
 fi
 for profile in prod demo; do
-  if [ -f ~/app/application-\${profile}.properties ]; then
-    cp ~/app/application-\${profile}.properties ~/"$NEW_DIR/application-\${profile}.properties"
-    echo "  Copied application-\${profile}.properties"
+  BUNDLED=~/"$NEW_DIR/application-\${profile}.properties"
+  SECRETS=~/app/application-\${profile}.properties
+  if [ -f "\$SECRETS" ]; then
+    grep -v '^\s*#' "\$SECRETS" | grep '=' | while IFS='=' read -r key value; do
+      key="\$(echo "\$key" | xargs)"
+      if grep -q "^\${key}=" "\$BUNDLED" 2>/dev/null; then
+        sed -i "s|^\${key}=.*|\${key}=\${value}|" "\$BUNDLED"
+      else
+        echo "\${key}=\${value}" >> "\$BUNDLED"
+      fi
+    done
+    echo "  Merged secrets from \$SECRETS into \$BUNDLED"
   else
-    echo "  WARNING: no application-\${profile}.properties found in ~/app/ — place one there before starting"
+    echo "  WARNING: no application-\${profile}.properties found in ~/app/ — secrets not applied"
   fi
 done
 

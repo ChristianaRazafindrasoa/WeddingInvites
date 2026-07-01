@@ -43,6 +43,8 @@ cp "$JAR_PATH" "$STAGE_DIR/app.jar"
 cp -R "$CLIENT_DIR/build/." "$STAGE_DIR/public/"
 cp "$SERVER_DIR/src/main/resources/application.properties.example" \
    "$STAGE_DIR/application.properties.example"
+cp "$SERVER_DIR/src/main/resources/application-demo.properties" "$STAGE_DIR/"
+cp "$SERVER_DIR/src/main/resources/application-prod.properties" "$STAGE_DIR/"
 cp -R "$SERVER_DIR/src/main/resources/sql/." "$STAGE_DIR/sql/"
 
 # Launcher script: reads application.properties from the same dir if present
