@@ -57,6 +57,14 @@ done
 if [ ! -f ~/"$NEW_DIR/application.properties" ]; then
   echo "  WARNING: no application.properties found — place one in ~/$NEW_DIR/ before starting"
 fi
+for profile in prod demo; do
+  if [ -f ~/app/application-\${profile}.properties ]; then
+    cp ~/app/application-\${profile}.properties ~/"$NEW_DIR/application-\${profile}.properties"
+    echo "  Copied application-\${profile}.properties"
+  else
+    echo "  WARNING: no application-\${profile}.properties found in ~/app/ — place one there before starting"
+  fi
+done
 
 log "Stopping existing server"
 pkill -f 'java.*app.jar' || echo "  (no server running)"
@@ -66,8 +74,10 @@ docker stop mysql-wedding || echo "  (database was not running)"
 
 log "Starting new server and database"
 chmod +x "$NEW_DIR/run.sh"
-nohup "$NEW_DIR/run.sh" > "$NEW_DIR/server.log" 2>&1 < /dev/null &
-echo "  Server started (pid \$!), log: ~/$NEW_DIR/server.log"
+"$NEW_DIR/run.sh" --spring.profiles.active=prod --server.port=8080
+echo "  Prod server started, log: ~/$NEW_DIR/server-prod.log"
+"$NEW_DIR/run.sh" --spring.profiles.active=demo --server.port=8081
+echo "  Demo server started, log: ~/$NEW_DIR/server-demo.log"
 
 log "Cleaning up old deployments"
 for dir in ~/wedding-*/; do
@@ -82,9 +92,13 @@ sleep 3
 ERRORS=0
 
 if pgrep -f 'java.*app.jar' > /dev/null; then
-  echo "  [OK] Server is running"
+  COUNT=\$(pgrep -c -f 'java.*app.jar')
+  echo "  [OK] \$COUNT server instance(s) running"
+  if [ "\$COUNT" -lt 2 ]; then
+    echo "  WARNING: expected 2 instances (prod + demo), got \$COUNT — check ~/$NEW_DIR/server.log"
+  fi
 else
-  echo "  [FAIL] Server is NOT running — check ~/$NEW_DIR/server.log"
+  echo "  [FAIL] Server is NOT running — check ~/$NEW_DIR/server-prod.log or ~/$NEW_DIR/server-demo.log"
   ERRORS=1
 fi
 

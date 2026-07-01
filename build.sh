@@ -52,13 +52,20 @@ cat > "$STAGE_DIR/run.sh" <<'LAUNCH'
 # this script (copy from application.properties.example) before running.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
+PROFILE="default"
+for arg in "$@"; do
+  case "$arg" in
+    --spring.profiles.active=*) PROFILE="${arg#*=}" ;;
+  esac
+done
+LOG_FILE="server-${PROFILE}.log"
 sudo systemctl start docker
 docker update --cpus="1" --memory="512m" --memory-swap="512m" mysql-wedding
 docker start mysql-wedding
 nohup taskset -c 0 java ${JAVA_OPTS:-} \
   -Xmx256m -XX:MaxMetaspaceSize=128m \
-  -Dspring.config.additional-location=optional:file:./application.properties \
-  -jar app.jar "$@" > server.log 2>&1 &
+  -Dspring.config.additional-location=optional:file:./ \
+  -jar app.jar "$@" > "$LOG_FILE" 2>&1 &
 LAUNCH
 chmod +x "$STAGE_DIR/run.sh"
 

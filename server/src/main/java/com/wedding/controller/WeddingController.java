@@ -51,6 +51,7 @@ public class WeddingController {
     private final S3Presigner s3Presigner;
     private final String bucketName;
     private final String baseUrl;
+    private final String s3Folder;
 
     public WeddingController(
             WeddingInfoRepository infoRepo,
@@ -60,7 +61,8 @@ public class WeddingController {
             @Value("${stripe.secret.key}") String stripeApiKey,
             @Value("${aws.region}") String region,
             @Value("${aws.bucket}") String bucketName,
-            @Value("${app.base-url}") String baseUrl) {
+            @Value("${app.base-url}") String baseUrl,
+            @Value("${aws.s3-folder}") String s3Folder) {
         this.infoRepo = infoRepo;
         this.photoRepo = photoRepo;
         this.noteRepo = noteRepo;
@@ -71,6 +73,7 @@ public class WeddingController {
             .build();
         this.bucketName = bucketName;
         this.baseUrl = baseUrl;
+        this.s3Folder = s3Folder;
     }
 
     @GetMapping("/info")
@@ -106,6 +109,7 @@ public class WeddingController {
             
         SessionCreateParams params = SessionCreateParams.builder()
             .setMode(SessionCreateParams.Mode.PAYMENT)
+            .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
             .setSuccessUrl(successUrl)
             .setCancelUrl(cancelUrl)
             .addLineItem(
@@ -169,7 +173,7 @@ public class WeddingController {
         weddingService.findByToken(token);
         String contentType = body.get("contentType");
         String fileName = body.get("fileName");
-        String key = "test/" + UUID.randomUUID() + "-" + fileName;
+        String key = s3Folder + "/" + UUID.randomUUID() + "-" + fileName;
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
             .key(key)

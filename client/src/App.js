@@ -174,7 +174,7 @@ function Invitation() {
       fetch("/api/photo-gallery")
         .then((res) => res.json())
         .then((updated) => setPhotos(updated));
-      setResponse({ message: "Upload succeeded. 🤍" });
+      setResponse({ message: "Upload succeeded. " });
     } catch {
       setResponse({ message: "Upload failed. Please try again later." });
     }

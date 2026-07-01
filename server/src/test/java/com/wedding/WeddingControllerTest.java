@@ -47,7 +47,7 @@ class WeddingControllerTest {
         weddingService = mock(WeddingService.class);
         controller = new WeddingController(
                 infoRepo, photoRepo, noteRepo, weddingService,
-                "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000");
+                "sk_test_dummy", "us-east-1", "test-bucket", "http://localhost:3000", "test");
         s3Presigner = mock(S3Presigner.class);
         ReflectionTestUtils.setField(controller, "s3Presigner", s3Presigner);
     }
