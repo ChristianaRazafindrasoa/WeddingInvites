@@ -59,8 +59,9 @@ for profile in prod demo; do
   if [ -f "\$SECRETS" ]; then
     grep -v '^\s*#' "\$SECRETS" | grep '=' | while IFS='=' read -r key value; do
       key="\$(echo "\$key" | xargs)"
+      escaped="\$(printf '%s' "\$value" | sed 's/[\\\\&]/\\\\&/g')"
       if grep -q "^\${key}=" "\$BUNDLED" 2>/dev/null; then
-        sed -i "s|^\${key}=.*|\${key}=\${value}|" "\$BUNDLED"
+        sed -i "s|^\${key}=.*|\${key}=\${escaped}|" "\$BUNDLED"
       else
         echo "\${key}=\${value}" >> "\$BUNDLED"
       fi
