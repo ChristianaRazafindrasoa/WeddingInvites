@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" style="color:#F4B6C2" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Wedding rings">
+  
+  <ellipse cx="46" cy="72" rx="26" ry="26"></ellipse>
+  
+  <ellipse cx="74" cy="66" rx="24" ry="24"></ellipse>
+  
+  <g transform="translate(74 30)">
+    <path d="M -13 6 L -6.5 -8 L 6.5 -8 L 13 6 L 0 20 Z"></path>
+    <path d="M -13 6 L 0 6 L 13 6"></path>
+    <path d="M -6.5 -8 L 0 6 L 6.5 -8"></path>
+    <path d="M 0 6 L 0 20"></path>
+  </g>
+  
+  <path d="M 66 47 L 71 42 M 82 47 L 78 42"></path>
+</svg>

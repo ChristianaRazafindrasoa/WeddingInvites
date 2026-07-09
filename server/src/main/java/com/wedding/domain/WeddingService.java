@@ -74,7 +74,7 @@ public class WeddingService {
         LocalDateTime previousRespondedAt = rsvp.getRespondedAt();
         return transaction.execute(status -> {
             try {
-                if (request.plusOneName() != null) {
+                if (request.plusOneName() != null && !request.plusOneName().isBlank()) {
                     Guest plusOne = guestRepo.findByFullName(request.plusOneName())
                         .orElseThrow(() -> new WeddingException(
                             HttpStatus.NOT_FOUND, "Plus one not found."));
