@@ -955,3 +955,9 @@ p {
     width: auto;
   }
 }
+
+@media (min-width: 769px) {
+  .footer {
+    margin-top: clamp(80px, 12vh, 160px);
+  }
+}
