@@ -103,9 +103,6 @@ a {
 }
 
 .notice-banner {
-  position: sticky;
-  top: 0;
-  z-index: 100;
   width: 100%;
   padding: 13px 24px;
   background: var(--pink);
@@ -188,6 +185,10 @@ a {
 
 .section:first-of-type {
   margin-top: var(--section-gap-first);
+}
+
+#fund {
+  margin-top: calc(var(--section-gap) + 40px);
 }
 
 .section-kicker {
@@ -373,6 +374,15 @@ p {
   color: var(--ink-muted);
 }
 
+.fund-note {
+  margin: 4px 0 20px;
+  text-align: center;
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: var(--ls-label-tight);
+  color: var(--ink-muted);
+}
+
 .rsvp-form button,
 .registry button,
 .guestbook button,
@@ -481,11 +491,11 @@ p {
   align-items: center;
   justify-content: center;
   width: 180px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--pink);
   border-radius: var(--radius-pill);
   padding: 15px 0;
-  background: var(--glass);
-  color: var(--white);
+  background: transparent;
+  color: var(--pink);
   font-family: var(--font-label);
   font-size: 0.85rem;
   font-weight: 600;
@@ -496,8 +506,7 @@ p {
 }
 
 .view-all-btn:hover {
-  border-color: var(--pink);
-  color: var(--pink);
+  background: rgba(244,182,194,0.08);
 }
 
 .photo-overlay {
@@ -609,6 +618,7 @@ p {
   width: 100%;
   font-size: 1rem;
   padding: 12px 20px;
+  border-radius: var(--radius-md);
 }
 
 .guestbook > div {
@@ -675,8 +685,8 @@ p {
 
 .footer {
   position: relative;
-  margin-top: var(--section-gap-first);
-  padding: 80px 20px 110px;
+  margin-top: clamp(16px, 2.5vh, 28px);
+  padding: 24px 20px 32px;
   text-align: center;
 }
 
@@ -697,14 +707,10 @@ p {
 }
 
 .rsvp-sticky-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 50;
+  margin: 6px auto;
   border: none;
   border-radius: var(--radius-pill);
   padding: 16px 38px;
@@ -721,7 +727,7 @@ p {
 }
 
 .rsvp-sticky-btn:hover {
-  transform: translateX(-50%) translateY(-3px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-button-hover), var(--glow-pink-soft);
 }
 
@@ -875,7 +881,7 @@ p {
 
   .registry {
     max-width: 100%;
-    margin-bottom: var(--section-gap-mobile, 110px);
+    margin-bottom: var(--section-gap-mobile, 190px);
   }
 
   .guestbook {
@@ -929,11 +935,7 @@ p {
   }
 
   .footer {
-    padding: 60px 20px 110px;
-  }
-
-  .rsvp-sticky-btn {
-    bottom: 18px;
+    padding: 20px 20px 32px;
   }
 }
 

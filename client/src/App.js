@@ -5,6 +5,10 @@ import ringsIcon from "./assets/icon-rings.svg";
 import champagneIcon from "./assets/icon-champagne.svg";
 
 const EVENT_ICONS = [ringsIcon, champagneIcon];
+const IS_PROD_SITE = window.location.hostname === process.env.REACT_APP_PROD_HOSTNAME;
+const IS_LOCAL_SITE = window.location.hostname === process.env.REACT_APP_LOCAL_HOSTNAME;
+const IS_DEMO_SITE = !IS_PROD_SITE && !IS_LOCAL_SITE;
+const HONEYFUND_URL = process.env.REACT_APP_HONEYFUND_URL;
 
 function Invitation() {
   const [wedding, setWedding] = useState(null);
@@ -31,6 +35,8 @@ function Invitation() {
   const [guestbookSuccess, setGuestbookSuccess] = useState(false);
   const [guestbookError, setGuestbookError] = useState(null);
   const [submittingNote, setSubmittingNote] = useState(false);
+  const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
+  const [rsvpAccepted, setRsvpAccepted] = useState(false);
 
   useEffect(() => {
     fetch("/api/info")
@@ -57,6 +63,8 @@ function Invitation() {
         setMainGuest(data.mainGuestName || "");
         setPlusOne(data.plusOneName || "");
         setAllowPlusOne(data.hasPlusOne === true);
+        setRsvpSubmitted(data.isSubmitted === true);
+        setRsvpAccepted(data.isAccepted === true);
         fetch("/api/photo-gallery")
           .then((res) => res.json())
           .then((photos) => setPhotos(photos));
@@ -85,10 +93,16 @@ function Invitation() {
         }),
       });
       const data = await response.json();
+      if (response.ok && data.isSubmitted) {
+        setRsvpSubmitted(true);
+        setRsvpAccepted(data.isAccepted === true);
+        return;
+      }
       setResponse({ message: data.message || data.error || "RSVP failed. Please try again later." });
       setShowMessage(true);
     } catch {
       setResponse({ message: "RSVP failed. Please try again later." });
+      setShowMessage(true);
     }
   };
 
@@ -315,7 +329,7 @@ function Invitation() {
       )}
       {!noToken && mainGuest && (
         <div className="notice-banner">
-          You're invited — welcome, dear {allowPlusOne ? "guests" : "guest"}
+          You're invited - welcome, dear {allowPlusOne ? "guests" : "guest"}!
         </div>
       )}
     <div className="page">
@@ -380,12 +394,14 @@ function Invitation() {
                 readOnly={!!token} />
             )}
             <div className="rsvp-actions">
-              <button onClick={() => submitRSVP(true)} disabled={noToken}>Accept</button>
-              <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={noToken}>Decline</button>
+              <button onClick={() => submitRSVP(true)} disabled={noToken || rsvpSubmitted}>Accept</button>
+              <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={noToken || rsvpSubmitted}>Decline</button>
             </div>
             <p className="rsvp-note">
-              Kindly respond by {rsvpDeadline.toLocaleDateString("en-US",
-                {month: "long", day: "numeric", year: "numeric"})}
+              {rsvpSubmitted
+                ? (rsvpAccepted ? "Accepted. Thank you, see you there!" : "Declined. Thank you, we'll miss you!")
+                : `Kindly respond by ${rsvpDeadline.toLocaleDateString("en-US",
+                    {month: "long", day: "numeric", year: "numeric"})}`}
             </p>
             {showMessage &&
               <div className="banner">
@@ -477,20 +493,37 @@ function Invitation() {
             <h2>Honeymoon Fund</h2>
             <p className="section-lead">Your presence is the greatest gift, but if you'd like to contribute
               to our honeymoon fund, you can do so below.</p>
-            <div className="registry-amount">
-              <span className="dollar-sign">$</span>
-              <input className="amount"
-                placeholder="0"
-                onKeyDown={(e) => {
-                  if (!/[0-9]/.test(e.key) &&
-                    !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-                onChange={(e) => setAmount(e.target.value)}/>
-            </div>
-            <button onClick={handleDonation} disabled={donating || noToken}>
-              {donating ? "Contributing..." : "Contribute"}</button>
+            {IS_DEMO_SITE && (
+              <div className="registry-amount">
+                <span className="dollar-sign">$</span>
+                <input className="amount"
+                  placeholder="0"
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) &&
+                      !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onChange={(e) => setAmount(e.target.value)}/>
+              </div>
+            )}
+            {IS_DEMO_SITE && (
+              <button onClick={handleDonation} disabled={donating || noToken}>
+                {donating ? "Contributing..." : "Contribute"}</button>
+            )}
+            {!IS_DEMO_SITE && (
+              <>
+                <p className="fund-note">
+                  You'll be redirected to <a href={HONEYFUND_URL} target="_blank" rel="noopener noreferrer">
+                    {HONEYFUND_URL}</a>. Accepts cards, Venmo, Apple Pay & PayPal.
+                </p>
+                <button
+                  onClick={() => window.open(HONEYFUND_URL, "_blank", "noopener,noreferrer")}
+                  disabled={noToken}>
+                  Contribute
+                </button>
+              </>
+            )}
             {donationError && (
               <div className="banner">
                 {donationError}<br/><br/>
