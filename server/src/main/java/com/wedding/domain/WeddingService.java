@@ -42,6 +42,7 @@ public class WeddingService {
             rsvp.getPlusOne() != null ? rsvp.getPlusOne().getFullName() : null,
             rsvp.getMainGuest().hasPlusOne(),
             rsvp.getRespondedAt() != null,
+            rsvp.isAccepted(),
             Optional.empty()
         );
     }
@@ -65,6 +66,7 @@ public class WeddingService {
             saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
             saved.getMainGuest().hasPlusOne(),
             true,
+            saved.isAccepted(),
             Optional.of(message));
     }
 

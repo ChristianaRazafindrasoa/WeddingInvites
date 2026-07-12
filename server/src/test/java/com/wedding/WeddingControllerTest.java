@@ -58,7 +58,7 @@ class WeddingControllerTest {
         when(presigned.url()).thenReturn(URI.create("https://s3.amazonaws.com/test-bucket/upload").toURL());
         when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class))).thenReturn(presigned);
         when(weddingService.findByToken("abc123"))
-                .thenReturn(new RSVPResponse("Foo Test", null, false, false, Optional.empty()));
+                .thenReturn(new RSVPResponse("Foo Test", null, false, false, false, Optional.empty()));
         Map<String, String> body = Map.of(
                 "contentType", "image/png",
                 "fileName", "cake.png",
@@ -73,7 +73,7 @@ class WeddingControllerTest {
     @Test
     void savePhotoPersistsUnapprovedPhotoAndReturnsMessage() {
         when(weddingService.findByToken("abc123"))
-                .thenReturn(new RSVPResponse("Foo Test", null, false, false, Optional.empty()));
+                .thenReturn(new RSVPResponse("Foo Test", null, false, false, false, Optional.empty()));
         Map<String, String> body = Map.of("s3Key", "uuid-cake.png", "token", "abc123");
         ResponseEntity<?> response = controller.savePhoto(body);
         assertEquals(HttpStatus.OK, response.getStatusCode());
