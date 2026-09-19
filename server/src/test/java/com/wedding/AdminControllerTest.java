@@ -45,9 +45,9 @@ class AdminControllerTest {
                         .header("Authorization", "Bearer " + token)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fullName").value("Foo Test"))
-                .andExpect(jsonPath("$[1].fullName").value("Bar Test"))
-                .andExpect(jsonPath("$[2].fullName").value("Test McTest"));
+                .andExpect(jsonPath("$[0].fullName").value("Foo"))
+                .andExpect(jsonPath("$[1].fullName").value("Bar"))
+                .andExpect(jsonPath("$[2].fullName").value("Test"));
     }
 
     @Test
@@ -58,10 +58,10 @@ class AdminControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].token").value("abc123"))
-                .andExpect(jsonPath("$[0].mainGuest.fullName").value("Foo Test"))
-                .andExpect(jsonPath("$[0].plusOne.fullName").value("Bar Test"))
+                .andExpect(jsonPath("$[0].mainGuest.fullName").value("Foo"))
+                .andExpect(jsonPath("$[0].plusOne.fullName").value("Bar"))
                 .andExpect(jsonPath("$[1].token").value("123abc"))
-                .andExpect(jsonPath("$[1].mainGuest.fullName").value("Test McTest"));
+                .andExpect(jsonPath("$[1].mainGuest.fullName").value("Test"));
     }
 
     @Test

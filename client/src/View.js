@@ -10,6 +10,12 @@ const HONEYFUND_URL = process.env.REACT_APP_HONEYFUND_URL;
 export default function InvitationView({
   wedding,
   noToken,
+  phone,
+  setPhone,
+  lookingUp,
+  lookupError,
+  setLookupError,
+  lookupByPhone,
   mainGuest,
   setMainGuest,
   plusOne,
@@ -53,15 +59,59 @@ export default function InvitationView({
   guestbookSuccess,
   setGuestbookSuccess,
 }) {
+  if (noToken) {
+    return (
+      <>
+        <div className="leaf-bg" />
+        <div className="page">
+          <div className="container">
+            <div className="hero">
+              <div className="hero-overlay">
+                <div className="hero-kicker">The Wedding of</div>
+                <h1>
+                  {wedding.groomName}
+                  <span className="hero-amp">&amp;</span>
+                  {wedding.brideName}
+                </h1>
+              </div>
+            </div>
+            <section className="section" id="rsvp">
+              <span className="section-kicker">Welcome</span>
+              <h2>Find Your Invitation</h2>
+              <div className="rsvp-form">
+                <div>
+                  <input className="name"
+                    type="tel"
+                    placeholder="e.g. 1234567890"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                    onKeyDown={(e) => { if (e.key === "Enter") lookupByPhone(); }} />
+                  <div className="rsvp-actions">
+                    <button onClick={lookupByPhone} disabled={lookingUp}>
+                      {lookingUp ? "Looking up..." : "Find"}
+                    </button>
+                  </div>
+                  <p className="rsvp-note">Enter the phone number your invitation was sent to.</p>
+                  {lookupError && (
+                    <div className="banner">
+                      {lookupError} <br></br>
+                      <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
+                      <button onClick={() => setLookupError(null)}>Close</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="leaf-bg" />
-      {noToken && (
-        <div className="notice-banner">
-          Token not found. Please contact us.
-        </div>
-      )}
-      {!noToken && mainGuest && (
+      {mainGuest && (
         <div className="notice-banner">
           You're invited - welcome, dear {allowPlusOne ? "guests" : "guest"}!
         </div>
@@ -128,8 +178,8 @@ export default function InvitationView({
                 readOnly={!!token} />
             )}
             <div className="rsvp-actions">
-              <button onClick={() => submitRSVP(true)} disabled={noToken || rsvpSubmitted}>Accept</button>
-              <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={noToken || rsvpSubmitted}>Decline</button>
+              <button onClick={() => submitRSVP(true)} disabled={rsvpSubmitted}>Accept</button>
+              <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={rsvpSubmitted}>Decline</button>
             </div>
             <p className="rsvp-note">
               {rsvpSubmitted
@@ -179,8 +229,8 @@ export default function InvitationView({
               multiple
               accept="image/*"
               onChange={handleFileChange}/>
-            <label htmlFor={uploading || noToken ? undefined : "file-input"}
-                className="upload-btn" style={uploading || noToken ? {opacity: 0.7, cursor: "default"} : {}}>
+            <label htmlFor={uploading ? undefined : "file-input"}
+                className="upload-btn" style={uploading ? {opacity: 0.7, cursor: "default"} : {}}>
               {uploading ? "Uploading..." : "Upload Photo"}
             </label>
           </div>
@@ -242,18 +292,17 @@ export default function InvitationView({
               </div>
             )}
             {IS_DEMO_SITE && (
-              <button onClick={handleDonation} disabled={donating || noToken}>
+              <button onClick={handleDonation} disabled={donating}>
                 {donating ? "Contributing..." : "Contribute"}</button>
             )}
             {!IS_DEMO_SITE && (
               <>
                 <p className="fund-note">
-                  You'll be redirected to <a href={HONEYFUND_URL} target="_blank" rel="noopener noreferrer">
-                    {HONEYFUND_URL}</a>. Accepts cards, Venmo, Apple Pay & PayPal.
+                  <a href={HONEYFUND_URL} target="_blank" rel="noopener noreferrer">{HONEYFUND_URL}</a>
                 </p>
                 <button
                   onClick={() => window.open(HONEYFUND_URL, "_blank", "noopener,noreferrer")}
-                  disabled={noToken}>
+                  >
                   Contribute
                 </button>
               </>
@@ -298,7 +347,7 @@ export default function InvitationView({
                   e.target.style.height = e.target.scrollHeight + "px";
                 }}
               />
-              <button onClick={submitGuestbook} disabled={submittingNote || noToken}>
+              <button onClick={submitGuestbook} disabled={submittingNote}>
                 {submittingNote ? "Submitting..." : "Submit"}
               </button>
             </div>

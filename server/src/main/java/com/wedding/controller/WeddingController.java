@@ -87,6 +87,12 @@ public class WeddingController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/rsvp/lookup")
+    public ResponseEntity<RSVPResponse> getByPhone(@RequestParam String phone) {
+        RSVPResponse response = weddingService.findByPhone(phone);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/rsvp")
     public ResponseEntity<RSVPResponse> submit(@RequestBody RSVPRequest request) {
         RSVPResponse response = weddingService.submit(request);

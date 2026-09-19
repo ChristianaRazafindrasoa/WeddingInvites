@@ -22,7 +22,9 @@ function Invitation() {
   const [uploading, setUploading] = useState(false);
   const [donating, setDonating] = useState(false);
   const [donationError, setDonationError] = useState(null);
-  const [noToken, setNoToken] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupError, setLookupError] = useState(null);
   const [guestName, setGuestName] = useState("");
   const [guestMessage, setGuestMessage] = useState("");
   const [guestbookSuccess, setGuestbookSuccess] = useState(false);
@@ -35,35 +37,37 @@ function Invitation() {
     fetch("/api/info")
       .then((res) => res.json())
       .then((data) => setWedding(data));
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
-    if (!urlToken) {
-      setNoToken(true);
+  }, []);
+
+  const lookupByPhone = async () => {
+    if (!phone.trim()) {
+      setLookupError("Please enter your phone number.");
       return;
     }
-
-    setToken(urlToken);
-    fetch(`/api/rsvp?token=${encodeURIComponent(urlToken)}`)
-      .then((res) => {
-        if (!res.ok) {
-          setNoToken(true);
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data) return;
-        setMainGuest(data.mainGuestName || "");
-        setPlusOne(data.plusOneName || "");
-        setAllowPlusOne(data.hasPlusOne === true);
-        setRsvpSubmitted(data.isSubmitted === true);
-        setRsvpAccepted(data.isAccepted === true);
-        fetch("/api/photo-gallery")
-          .then((res) => res.json())
-          .then((photos) => setPhotos(photos));
-      })
-      .catch(() => setNoToken(true));
-  }, []);
+    setLookingUp(true);
+    setLookupError(null);
+    try {
+      const res = await fetch(`/api/rsvp/lookup?phone=${encodeURIComponent(phone.trim())}`);
+      if (!res.ok) {
+        setLookupError("No invitation found for that phone number. Please contact us.");
+        return;
+      }
+      const data = await res.json();
+      setToken(data.token);
+      setMainGuest(data.mainGuestName || "");
+      setPlusOne(data.plusOneName || "");
+      setAllowPlusOne(data.hasPlusOne === true);
+      setRsvpSubmitted(data.isSubmitted === true);
+      setRsvpAccepted(data.isAccepted === true);
+      fetch("/api/photo-gallery")
+        .then((res) => res.json())
+        .then((photos) => setPhotos(photos));
+    } catch {
+      setLookupError("Something went wrong. Please try again.");
+    } finally {
+      setLookingUp(false);
+    }
+  };
 
   const submitRSVP = async (attending) => {
     try {
@@ -124,9 +128,7 @@ function Invitation() {
   };
 
   const uploadPhotos = async (selectedFiles) => {
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
-    if (!urlToken) {
+    if (!token) {
       setResponse({ message: "You must be an invited guest to upload photos."});
       clearUpload();
       return;
@@ -150,7 +152,7 @@ function Invitation() {
             body: JSON.stringify({
               fileName: file.name,
               contentType: file.type,
-              token: urlToken
+              token: token
             })
           }
         );
@@ -179,7 +181,7 @@ function Invitation() {
             },
             body: JSON.stringify({
               s3Key: presignData.s3Key,
-              token: urlToken
+              token: token
             })
           }
         );
@@ -266,10 +268,9 @@ function Invitation() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (!noToken && params.get("success") === "true") {
+    if (params.get("success") === "true") {
       setShowSuccess(true);
       const sessionId = params.get("id");
-      const token = params.get("token");
       fetch(`/api/checkout-session/${sessionId}`)
       .then(res => {
         if (!res.ok) {
@@ -279,9 +280,9 @@ function Invitation() {
       })
       .then(data => { setAmount(data.amount); })
       .catch(err => { console.error(err); });
-      window.history.replaceState({}, "", `/?token=${token}`);
+      window.history.replaceState({}, "", "/");
     }
-  }, [noToken]);
+  }, []);
 
   useEffect(() => {
     if (!showAllPhotos) return;
@@ -311,7 +312,13 @@ function Invitation() {
   return (
     <InvitationView
       wedding={wedding}
-      noToken={noToken}
+      noToken={!token}
+      phone={phone}
+      setPhone={setPhone}
+      lookingUp={lookingUp}
+      lookupError={lookupError}
+      setLookupError={setLookupError}
+      lookupByPhone={lookupByPhone}
       mainGuest={mainGuest}
       setMainGuest={setMainGuest}
       plusOne={plusOne}

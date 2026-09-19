@@ -87,6 +87,23 @@ public class WeddingServiceTest {
     }
 
     @Test
+    void findByPhoneReturnsRsvpForUniqueMatch() {
+        var response = service.findByPhone("111-222-3333");
+        assertEquals("John Doe", response.mainGuestName());
+        assertEquals("test1-token", response.token());
+    }
+
+    @Test
+    void findByPhoneThrowsWhenNoMatch() {
+        assertThrows(WeddingException.class, () -> service.findByPhone("9999999999"));
+    }
+
+    @Test
+    void findByPhoneThrowsWhenAmbiguous() {
+        assertThrows(WeddingException.class, () -> service.findByPhone("4445556666"));
+    }
+
+    @Test
     void validateCheckoutReturnsParsedAmountWhenValid() {
         long result = service.validateCheckout("50");
         assertEquals(50L, result);

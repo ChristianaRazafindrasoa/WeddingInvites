@@ -9,5 +9,6 @@ import com.wedding.model.RSVP;
 
 public interface RSVPRepository extends JpaRepository<RSVP, Integer> {
     Optional<RSVP> findByMainGuest(Guest mainGuest);
+    Optional<RSVP> findByPlusOne(Guest plusOne);
     Optional<RSVP> findByToken(String token);
 }

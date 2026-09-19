@@ -23,8 +23,8 @@ class RSVPControllerTest {
     void submitRsvpReturnsOkWhenMainGuestAndPlusOneValid() throws Exception {
         String requestBody = "{" +
                 "\"token\":\"abc123\"," +
-                "\"mainGuestName\":\"Foo Test\"," +
-                "\"plusOneName\":\"Bar Test\"," +
+                "\"mainGuestName\":\"Foo\"," +
+                "\"plusOneName\":\"Bar\"," +
                 "\"isAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
@@ -32,9 +32,9 @@ class RSVPControllerTest {
                 .content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mainGuestName")
-                        .value("Foo Test"))
+                        .value("Foo"))
                 .andExpect(jsonPath("$.plusOneName")
-                        .value("Bar Test"))
+                        .value("Bar"))
                 .andExpect(jsonPath("$.message")
                         .value("Thank you for attending."));
     }
@@ -43,8 +43,8 @@ class RSVPControllerTest {
     void submitRsvpRturnsBadRequestWhenAlreadySubmitted() throws Exception {
         String requestBody = "{" +
                 "\"token\":\"abc123\"," +
-                "\"mainGuestName\":\"Foo Test\"," +
-                "\"plusOneName\":\"Bar Test\"," +
+                "\"mainGuestName\":\"Foo\"," +
+                "\"plusOneName\":\"Bar\"," +
                 "\"isAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
@@ -63,8 +63,8 @@ class RSVPControllerTest {
     void submitRsvpReturnsNotFoundWhenTokenInvalid() throws Exception {
         String requestBody = "{" +
                 "\"token\":\"invalid-token\"," +
-                "\"mainGuestName\":\"Foo Test\"," +
-                "\"plusOneName\":\"Bar Test\"," +
+                "\"mainGuestName\":\"Foo\"," +
+                "\"plusOneName\":\"Bar\"," +
                 "\"isAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
@@ -81,9 +81,9 @@ class RSVPControllerTest {
                 .param("token", "abc123"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mainGuestName")
-                        .value("Foo Test"))
+                        .value("Foo"))
                 .andExpect(jsonPath("$.plusOneName")
-                        .value("Bar Test"));
+                        .value("Bar"));
     }
 
     @Test

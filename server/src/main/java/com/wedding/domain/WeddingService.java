@@ -1,7 +1,9 @@
 package com.wedding.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +39,40 @@ public class WeddingService {
     public RSVPResponse findByToken(String token) {
         RSVP rsvp = rsvpRepo.findByToken(token)
             .orElseThrow(() -> new WeddingException(HttpStatus.NOT_FOUND, "RSVP not found."));
+        return toResponse(rsvp, Optional.empty());
+    }
+
+    public RSVPResponse findByPhone(String phone) {
+        if (phone == null || phone.isBlank()) {
+            throw new WeddingException(HttpStatus.BAD_REQUEST, "Phone number is required.");
+        }
+        String normalized = normalizePhone(phone);
+        List<Guest> matches = guestRepo.findByPhoneNumber(normalized);
+        List<RSVP> rsvps = matches.stream()
+            .flatMap(guest -> Stream.of(rsvpRepo.findByMainGuest(guest), rsvpRepo.findByPlusOne(guest)))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .distinct()
+            .toList();
+        if (rsvps.size() != 1) {
+            throw new WeddingException(HttpStatus.NOT_FOUND, "No invitation found for that phone number.");
+        }
+        return toResponse(rsvps.get(0), Optional.empty());
+    }
+
+    private String normalizePhone(String phone) {
+        return phone.replaceAll("[^0-9]", "");
+    }
+
+    private RSVPResponse toResponse(RSVP rsvp, Optional<String> message) {
         return new RSVPResponse(
+            rsvp.getToken(),
             rsvp.getMainGuest().getFullName(),
             rsvp.getPlusOne() != null ? rsvp.getPlusOne().getFullName() : null,
             rsvp.getMainGuest().hasPlusOne(),
             rsvp.getRespondedAt() != null,
             rsvp.isAccepted(),
-            Optional.empty()
+            message
         );
     }
 
@@ -61,13 +90,7 @@ public class WeddingService {
         String message = request.isAccepted() ?
             "Thank you for attending." :
             "Thank you, we'll miss you.";
-        return new RSVPResponse(
-            saved.getMainGuest().getFullName(),
-            saved.getPlusOne() != null ? saved.getPlusOne().getFullName() : null,
-            saved.getMainGuest().hasPlusOne(),
-            true,
-            saved.isAccepted(),
-            Optional.of(message));
+        return toResponse(saved, Optional.of(message));
     }
 
     private RSVP persist(RSVP rsvp, Guest mainGuest, RSVPRequest request) {
