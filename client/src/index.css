@@ -118,7 +118,7 @@ a {
 .hero {
   position: relative;
   width: 100%;
-  min-height: 82vh;
+  padding: 48px 0 60px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,6 +185,51 @@ a {
 
 .section:first-of-type {
   margin-top: var(--section-gap-first);
+}
+
+#rsvp.section:first-of-type {
+  margin-top: calc(var(--section-gap-first) * 1.5);
+}
+
+.hero-rsvp-row + #events {
+  margin-top: 60px;
+}
+
+.hero-rsvp-divider {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .hero-rsvp-row {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .hero-rsvp-divider {
+    display: block;
+    align-self: center;
+    width: 1px;
+    height: 55%;
+    background: linear-gradient(var(--glass-border-pink), transparent);
+  }
+
+  .hero-rsvp-row .hero {
+    flex: 1 1 80%;
+  }
+
+  .hero-rsvp-row #rsvp.section:first-of-type {
+    flex: 1 1 20%;
+    margin-top: 0;
+  }
+
+  .hero-rsvp-row--lookup .hero {
+    flex: 1 1 65%;
+  }
+
+  .hero-rsvp-row--lookup #rsvp.section:first-of-type {
+    flex: 1 1 35%;
+  }
 }
 
 #fund {
@@ -328,7 +373,8 @@ p {
 }
 
 .name,
-.rsvp-form input {
+.rsvp-form input,
+.rsvp-form select {
   width: 100%;
   display: block;
   margin: 0;
@@ -350,11 +396,31 @@ p {
 
 .name:focus,
 .amount:focus,
-.rsvp-form input:focus {
+.rsvp-form input:focus,
+.rsvp-form select:focus {
   outline: none;
   transform: translateY(-2px);
   box-shadow: var(--glow-pink-soft);
   border-color: var(--pink);
+}
+
+.phone-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.country-code-select {
+  flex: 0 0 90px;
+  padding: 14px 8px;
+  text-align: center;
+  text-align-last: center;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: var(--radius-pill);
+}
+
+.phone-input-group .name {
+  flex: 1 1 auto;
 }
 
 .rsvp-actions {
@@ -853,7 +919,11 @@ p {
   }
 
   .hero {
-    min-height: 76vh;
+    padding: 100px 0 12px;
+  }
+
+  #rsvp.section:first-of-type {
+    margin-top: var(--section-gap-first);
   }
 
   .container {

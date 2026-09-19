@@ -23,6 +23,7 @@ function Invitation() {
   const [donating, setDonating] = useState(false);
   const [donationError, setDonationError] = useState(null);
   const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupError, setLookupError] = useState(null);
   const [guestName, setGuestName] = useState("");
@@ -47,7 +48,8 @@ function Invitation() {
     setLookingUp(true);
     setLookupError(null);
     try {
-      const res = await fetch(`/api/rsvp/lookup?phone=${encodeURIComponent(phone.trim())}`);
+      const fullPhone = `${countryCode}${phone.trim()}`;
+      const res = await fetch(`/api/rsvp/lookup?phone=${encodeURIComponent(fullPhone)}`);
       if (!res.ok) {
         setLookupError("No invitation found for that phone number. Please contact us.");
         return;
@@ -59,6 +61,9 @@ function Invitation() {
       setAllowPlusOne(data.hasPlusOne === true);
       setRsvpSubmitted(data.isSubmitted === true);
       setRsvpAccepted(data.isAccepted === true);
+      if (window.innerWidth <= 768) {
+        window.scrollTo(0, 0);
+      }
       fetch("/api/photo-gallery")
         .then((res) => res.json())
         .then((photos) => setPhotos(photos));
@@ -306,15 +311,14 @@ function Invitation() {
     return <h2 className="loading">Loading wedding data...</h2>;
   }
 
-  const rsvpDeadline = new Date(wedding.weddingDate);
-  rsvpDeadline.setMonth(rsvpDeadline.getMonth() - 2);
-
   return (
     <InvitationView
       wedding={wedding}
       noToken={!token}
       phone={phone}
       setPhone={setPhone}
+      countryCode={countryCode}
+      setCountryCode={setCountryCode}
       lookingUp={lookingUp}
       lookupError={lookupError}
       setLookupError={setLookupError}
@@ -328,7 +332,6 @@ function Invitation() {
       submitRSVP={submitRSVP}
       rsvpSubmitted={rsvpSubmitted}
       rsvpAccepted={rsvpAccepted}
-      rsvpDeadline={rsvpDeadline}
       showMessage={showMessage}
       setShowMessage={setShowMessage}
       response={response}

@@ -2,6 +2,7 @@ import ringsIcon from "./assets/icon-rings.svg";
 import champagneIcon from "./assets/icon-champagne.svg";
 
 const EVENT_ICONS = [ringsIcon, champagneIcon];
+const COUNTRY_CODES = ["+1", "+230", "+261"];
 const IS_PROD_SITE = window.location.hostname === process.env.REACT_APP_PROD_HOSTNAME;
 const IS_LOCAL_SITE = window.location.hostname === process.env.REACT_APP_LOCAL_HOSTNAME;
 const IS_DEMO_SITE = !IS_PROD_SITE && !IS_LOCAL_SITE;
@@ -12,6 +13,8 @@ export default function InvitationView({
   noToken,
   phone,
   setPhone,
+  countryCode,
+  setCountryCode,
   lookingUp,
   lookupError,
   setLookupError,
@@ -25,7 +28,6 @@ export default function InvitationView({
   submitRSVP,
   rsvpSubmitted,
   rsvpAccepted,
-  rsvpDeadline,
   showMessage,
   setShowMessage,
   response,
@@ -63,45 +65,68 @@ export default function InvitationView({
     return (
       <>
         <div className="leaf-bg" />
+        <div className="notice-banner">Welcome to our website</div>
         <div className="page">
           <div className="container">
-            <div className="hero">
-              <div className="hero-overlay">
-                <div className="hero-kicker">The Wedding of</div>
-                <h1>
-                  {wedding.groomName}
-                  <span className="hero-amp">&amp;</span>
-                  {wedding.brideName}
-                </h1>
-              </div>
-            </div>
-            <section className="section" id="rsvp">
-              <span className="section-kicker">Welcome</span>
-              <h2>Find Your Invitation</h2>
-              <div className="rsvp-form">
-                <div>
-                  <input className="name"
-                    type="tel"
-                    placeholder="e.g. 1234567890"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                    onKeyDown={(e) => { if (e.key === "Enter") lookupByPhone(); }} />
-                  <div className="rsvp-actions">
-                    <button onClick={lookupByPhone} disabled={lookingUp}>
-                      {lookingUp ? "Looking up..." : "Find"}
-                    </button>
+            <div className="hero-rsvp-row hero-rsvp-row--lookup">
+              <div className="hero">
+                <div className="hero-overlay">
+                  <div className="hero-kicker">The Wedding of</div>
+                  <h1>
+                    {wedding.groomName}
+                    <span className="hero-amp">&amp;</span>
+                    {wedding.brideName}
+                  </h1>
+                  <div className="hero-meta">
+                    {new Date(wedding.weddingDate).toLocaleDateString("en-US",
+                      {weekday: "long", month: "long", day: "numeric", year: "numeric"})
+                      .replace(",", " •")
+                      .replace(",", " •")}
+                    <br />
+                    {wedding.city}
                   </div>
-                  <p className="rsvp-note">Enter the phone number your invitation was sent to.</p>
-                  {lookupError && (
-                    <div className="banner">
-                      {lookupError} <br></br>
-                      <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
-                      <button onClick={() => setLookupError(null)}>Close</button>
-                    </div>
-                  )}
                 </div>
               </div>
-            </section>
+              <div className="hero-rsvp-divider" />
+              <section className="section" id="rsvp">
+                <div className="rsvp-form">
+                  <div>
+                    <div className="phone-input-group">
+                      <select
+                        className="country-code-select"
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                      >
+                        {COUNTRY_CODES.map((code) => (
+                          <option key={code} value={code}>
+                            {code}
+                          </option>
+                        ))}
+                      </select>
+                      <input className="name"
+                        type="tel"
+                        placeholder="e.g. 1234567890"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                        onKeyDown={(e) => { if (e.key === "Enter") lookupByPhone(); }} />
+                    </div>
+                    <div className="rsvp-actions">
+                      <button onClick={lookupByPhone} disabled={lookingUp}>
+                        {lookingUp ? "Looking up..." : "Find"}
+                      </button>
+                    </div>
+                    <p className="rsvp-note">Enter your phone number to find your invitation.</p>
+                    {lookupError && (
+                      <div className="banner">
+                        {lookupError} <br></br>
+                        <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
+                        <button onClick={() => setLookupError(null)}>Close</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </>
@@ -113,28 +138,68 @@ export default function InvitationView({
       <div className="leaf-bg" />
       {mainGuest && (
         <div className="notice-banner">
-          You're invited - welcome, dear {allowPlusOne ? "guests" : "guest"}!
+          You're invited, dear {allowPlusOne ? "guests" : "guest"}!
         </div>
       )}
     <div className="page">
     <div className="container">
-      <div className="hero">
-        <div className="hero-overlay">
-          <div className="hero-kicker">The Wedding of</div>
-          <h1>
-            {wedding.groomName}
-            <span className="hero-amp">&amp;</span>
-            {wedding.brideName}
-          </h1>
-          <div className="hero-meta">
-            {new Date(wedding.weddingDate).toLocaleDateString("en-US",
-              {weekday: "long", month: "long", day: "numeric", year: "numeric"})
-              .replace(",", " •")
-              .replace(",", " •")}
-            <br />
-            {wedding.city}
+      <div className="hero-rsvp-row">
+        <div className="hero">
+          <div className="hero-overlay">
+            <div className="hero-kicker">The Wedding of</div>
+            <h1>
+              {wedding.groomName}
+              <span className="hero-amp">&amp;</span>
+              {wedding.brideName}
+            </h1>
+            <div className="hero-meta">
+              {new Date(wedding.weddingDate).toLocaleDateString("en-US",
+                {weekday: "long", month: "long", day: "numeric", year: "numeric"})
+                .replace(",", " •")
+                .replace(",", " •")}
+              <br />
+              {wedding.city}
+            </div>
           </div>
         </div>
+
+        <div className="hero-rsvp-divider" />
+        <section className="section" id="rsvp">
+          <span className="section-kicker">Will you celebrate with us?</span>
+          <h2>RSVP</h2>
+          <div className="rsvp-form">
+            <div>
+              <input className="name"
+                placeholder="e.g. John Doe"
+                value={mainGuest}
+                onChange={(e) => setMainGuest(e.target.value)}
+                readOnly={!!token} />
+              {allowPlusOne && (
+                <input className="name"
+                  title="Plus one"
+                  placeholder="e.g. Jane Doe (optional)"
+                  value={plusOne}
+                  onChange={(e) => setPlusOne(e.target.value)}
+                  readOnly={!!token} />
+              )}
+              <div className="rsvp-actions">
+                <button onClick={() => submitRSVP(true)} disabled={rsvpSubmitted}>Accept</button>
+                <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={rsvpSubmitted}>Decline</button>
+              </div>
+              <p className="rsvp-note">
+                {rsvpSubmitted
+                  ? (rsvpAccepted ? "Accepted - see you there!" : "Declined - we'll miss you!")
+                  : "Kindly RSVP at your earliest convenience"}
+              </p>
+              {showMessage &&
+                <div className="banner">
+                  {response.message} <br></br>
+                  <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
+                  <button onClick={() => setShowMessage(false)}>Close</button>
+                </div>}
+            </div>
+          </div>
+        </section>
       </div>
 
       <section className="section" id="events">
@@ -157,44 +222,6 @@ export default function InvitationView({
             </li>
           ))}
         </ul>
-      </section>
-
-      <section className="section" id="rsvp">
-        <span className="section-kicker">Will you celebrate with us?</span>
-        <h2>RSVP</h2>
-        <div className="rsvp-form">
-          <div>
-            <input className="name"
-              placeholder="e.g. John Doe"
-              value={mainGuest}
-              onChange={(e) => setMainGuest(e.target.value)}
-              readOnly={!!token} />
-            {allowPlusOne && (
-              <input className="name"
-                title="Plus one"
-                placeholder="e.g. Jane Doe (optional)"
-                value={plusOne}
-                onChange={(e) => setPlusOne(e.target.value)}
-                readOnly={!!token} />
-            )}
-            <div className="rsvp-actions">
-              <button onClick={() => submitRSVP(true)} disabled={rsvpSubmitted}>Accept</button>
-              <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={rsvpSubmitted}>Decline</button>
-            </div>
-            <p className="rsvp-note">
-              {rsvpSubmitted
-                ? (rsvpAccepted ? "Accepted - see you there!" : "Declined - we'll miss you!")
-                : `Kindly respond by ${rsvpDeadline.toLocaleDateString("en-US",
-                    {month: "long", day: "numeric", year: "numeric"})}`}
-            </p>
-            {showMessage &&
-              <div className="banner">
-                {response.message} <br></br>
-                <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
-                <button onClick={() => setShowMessage(false)}>Close</button>
-              </div>}
-          </div>
-        </div>
       </section>
 
       <section className="section" id="gallery">

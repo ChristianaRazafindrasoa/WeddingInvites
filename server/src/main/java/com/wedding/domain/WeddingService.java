@@ -61,7 +61,7 @@ public class WeddingService {
     }
 
     private String normalizePhone(String phone) {
-        return phone.replaceAll("[^0-9]", "");
+        return phone.replaceAll("[^0-9+]", "");
     }
 
     private RSVPResponse toResponse(RSVP rsvp, Optional<String> message) {
