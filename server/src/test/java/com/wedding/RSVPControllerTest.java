@@ -25,7 +25,8 @@ class RSVPControllerTest {
                 "\"token\":\"abc123\"," +
                 "\"mainGuestName\":\"Foo\"," +
                 "\"plusOneName\":\"Bar\"," +
-                "\"isAccepted\":true" +
+                "\"mainGuestAccepted\":true,"+
+                "\"plusOneAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -45,7 +46,8 @@ class RSVPControllerTest {
                 "\"token\":\"abc123\"," +
                 "\"mainGuestName\":\"Foo\"," +
                 "\"plusOneName\":\"Bar\"," +
-                "\"isAccepted\":true" +
+                "\"mainGuestAccepted\":true,"+
+                "\"plusOneAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +67,8 @@ class RSVPControllerTest {
                 "\"token\":\"invalid-token\"," +
                 "\"mainGuestName\":\"Foo\"," +
                 "\"plusOneName\":\"Bar\"," +
-                "\"isAccepted\":true" +
+                "\"mainGuestAccepted\":true,"+
+                "\"plusOneAccepted\":true" +
                 "}";
         mockMvc.perform(post("/api/rsvp")
                 .contentType(MediaType.APPLICATION_JSON)

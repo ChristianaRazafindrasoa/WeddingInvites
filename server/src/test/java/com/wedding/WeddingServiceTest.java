@@ -44,31 +44,39 @@ public class WeddingServiceTest {
         guestOne = guestRepo.save(new Guest(1, "John Doe", "1112223333", true, false));
         guestTwo = guestRepo.save(new Guest(2, "Jane Doe", "4445556666", false, false));
         guestThree = guestRepo.save(new Guest(3, "Janette Doe", "4445556666", false, false));
-        rsvpRepo.save(new RSVP("test1-token", guestOne, guestTwo, null, false));
-        rsvpRepo.save(new RSVP("test2-token", guestTwo, null, null, false));
-        rsvpRepo.save(new RSVP("test3-token", guestThree, null, null, false));
+        rsvpRepo.save(new RSVP("test1-token", guestOne, guestTwo, null));
+        rsvpRepo.save(new RSVP("test2-token", guestTwo, null, null));
+        rsvpRepo.save(new RSVP("test3-token", guestThree, null, null));
     }
 
     @Test
     void submitRollsBackWhenPlusOneNotFound() {
-        RSVPRequest request = new RSVPRequest("test1-token", guestOne.getFullName(), "not-a-guest", true);
+        RSVPRequest request = new RSVPRequest("test1-token", guestOne.getFullName(), "not-a-guest", true, true);
         assertThrows(WeddingException.class, () -> service.submit(request));
         Guest updatedGuest = guestRepo.findById(guestOne.getId()).orElseThrow();
         RSVP updatedRSVP = rsvpRepo.findByToken("test1-token").orElseThrow();
         assertFalse(updatedGuest.isAttending());
-        assertFalse(updatedRSVP.isAccepted());
         assertNull(updatedRSVP.getRespondedAt());
     }
 
     @Test
     void submitSavesGuestAndRSVPWhenAccepted() {
-        RSVPRequest request = new RSVPRequest("test2-token", guestTwo.getFullName(), null, true);
+        RSVPRequest request = new RSVPRequest("test2-token", guestTwo.getFullName(), null, true, false);
         service.submit(request);
         Guest updatedGuest = guestRepo.findById(guestTwo.getId()).orElseThrow();
         RSVP updatedRSVP = rsvpRepo.findByToken("test2-token").orElseThrow();
         assertTrue(updatedGuest.isAttending());
-        assertTrue(updatedRSVP.isAccepted());
         assertNotNull(updatedRSVP.getRespondedAt());
+    }
+
+    @Test
+    void submitAllowsEachGuestToRespondIndependently() {
+        RSVPRequest request = new RSVPRequest("test1-token", guestOne.getFullName(), guestTwo.getFullName(), true, false);
+        service.submit(request);
+        Guest updatedMainGuest = guestRepo.findById(guestOne.getId()).orElseThrow();
+        Guest updatedPlusOne = guestRepo.findById(guestTwo.getId()).orElseThrow();
+        assertTrue(updatedMainGuest.isAttending());
+        assertFalse(updatedPlusOne.isAttending());
     }
 
     @Test
@@ -77,12 +85,11 @@ public class WeddingServiceTest {
         when(spyRsvpRepo.findByToken(any())).thenAnswer(inv -> rsvpRepo.findByToken(inv.getArgument(0)));
         doThrow(new RuntimeException("simulated failure")).when(spyRsvpRepo).save(any());
         WeddingService spyService = new WeddingService(guestRepo, spyRsvpRepo, txManager);
-        RSVPRequest request = new RSVPRequest("test3-token", guestThree.getFullName(), null, true);
+        RSVPRequest request = new RSVPRequest("test3-token", guestThree.getFullName(), null, true, false);
         assertThrows(RuntimeException.class, () -> spyService.submit(request));
         Guest updatedGuest = guestRepo.findById(guestThree.getId()).orElseThrow();
         RSVP updatedRSVP = rsvpRepo.findByToken("test3-token").orElseThrow();
         assertFalse(updatedGuest.isAttending());
-        assertFalse(updatedRSVP.isAccepted());
         assertNull(updatedRSVP.getRespondedAt());
     }
 

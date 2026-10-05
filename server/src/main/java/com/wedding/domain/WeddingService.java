@@ -39,7 +39,7 @@ public class WeddingService {
     public RSVPResponse findByToken(String token) {
         RSVP rsvp = rsvpRepo.findByToken(token)
             .orElseThrow(() -> new WeddingException(HttpStatus.NOT_FOUND, "RSVP not found."));
-        return toResponse(rsvp, Optional.empty());
+        return toResponse(rsvp);
     }
 
     public RSVPResponse findByPhone(String phone) {
@@ -57,21 +57,30 @@ public class WeddingService {
         if (rsvps.size() != 1) {
             throw new WeddingException(HttpStatus.NOT_FOUND, "No invitation found for that phone number.");
         }
-        return toResponse(rsvps.get(0), Optional.empty());
+        return toResponse(rsvps.get(0));
     }
 
     private String normalizePhone(String phone) {
         return phone.replaceAll("[^0-9+]", "");
     }
 
-    private RSVPResponse toResponse(RSVP rsvp, Optional<String> message) {
+    private RSVPResponse toResponse(RSVP rsvp) {
+        boolean hasPlusOne = rsvp.getPlusOne() != null;
+        Optional<String> message = rsvp.getRespondedAt() == null ?
+            Optional.empty() :
+            Optional.of(buildResponseMessage(
+                rsvp.getMainGuest().getFullName(), rsvp.getMainGuest().isAttending(),
+                hasPlusOne ? rsvp.getPlusOne().getFullName() : null,
+                hasPlusOne ? rsvp.getPlusOne().isAttending() : null
+            ));
         return new RSVPResponse(
             rsvp.getToken(),
             rsvp.getMainGuest().getFullName(),
-            rsvp.getPlusOne() != null ? rsvp.getPlusOne().getFullName() : null,
+            hasPlusOne ? rsvp.getPlusOne().getFullName() : null,
             rsvp.getMainGuest().hasPlusOne(),
             rsvp.getRespondedAt() != null,
-            rsvp.isAccepted(),
+            rsvp.getMainGuest().isAttending(),
+            hasPlusOne && rsvp.getPlusOne().isAttending(),
             message
         );
     }
@@ -87,15 +96,27 @@ public class WeddingService {
             throw new WeddingException(HttpStatus.BAD_REQUEST, "Guest does not match token.");
         }
         RSVP saved = persist(rsvp, mainGuest, request);
-        String message = request.isAccepted() ?
-            "Thank you for attending." :
-            "Thank you, we'll miss you.";
-        return toResponse(saved, Optional.of(message));
+        return toResponse(saved);
+    }
+
+    private String buildResponseMessage(
+            String mainGuestName, boolean mainGuestAccepted,
+            String plusOneName, Boolean plusOneAccepted) {
+        if (plusOneName == null) {
+            return statusLine(mainGuestAccepted, mainGuestName);
+        }
+        if (mainGuestAccepted == plusOneAccepted) {
+            return statusLine(mainGuestAccepted, mainGuestName + " & " + plusOneName);
+        }
+        return statusLine(mainGuestAccepted, mainGuestName) + "\n" + statusLine(plusOneAccepted, plusOneName);
+    }
+
+    private String statusLine(boolean accepted, String names) {
+        return (accepted ? "accepted with joy" : "declined with regret") + " - " + names;
     }
 
     private RSVP persist(RSVP rsvp, Guest mainGuest, RSVPRequest request) {
         boolean wasAttending = mainGuest.isAttending();
-        boolean wasAccepted = rsvp.isAccepted();
         LocalDateTime previousRespondedAt = rsvp.getRespondedAt();
         return transaction.execute(status -> {
             try {
@@ -103,18 +124,16 @@ public class WeddingService {
                     Guest plusOne = guestRepo.findByFullName(request.plusOneName())
                         .orElseThrow(() -> new WeddingException(
                             HttpStatus.NOT_FOUND, "Plus one not found."));
-                    plusOne.setAttending(request.isAccepted());
+                    plusOne.setAttending(request.plusOneAccepted());
                     guestRepo.save(plusOne);
                 }
-                mainGuest.setAttending(request.isAccepted());
+                mainGuest.setAttending(request.mainGuestAccepted());
                 guestRepo.save(mainGuest);
                 rsvp.setRespondedAt(LocalDateTime.now());
-                rsvp.setAccepted(request.isAccepted());
                 return rsvpRepo.save(rsvp);
             } catch (Throwable throwable) {
                 mainGuest.setAttending(wasAttending);
                 rsvp.setRespondedAt(previousRespondedAt);
-                rsvp.setAccepted(wasAccepted);
                 status.setRollbackOnly();
                 log.error("RSVP transaction failed", throwable);
                 throw throwable;

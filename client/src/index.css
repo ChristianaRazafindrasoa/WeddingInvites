@@ -215,20 +215,20 @@ a {
   }
 
   .hero-rsvp-row .hero {
-    flex: 1 1 80%;
+    flex: 1 1 60%;
   }
 
   .hero-rsvp-row #rsvp.section:first-of-type {
-    flex: 1 1 20%;
+    flex: 1 1 40%;
     margin-top: 0;
   }
 
   .hero-rsvp-row--lookup .hero {
-    flex: 1 1 65%;
+    flex: 1 1 60%;
   }
 
   .hero-rsvp-row--lookup #rsvp.section:first-of-type {
-    flex: 1 1 35%;
+    flex: 1 1 40%;
   }
 }
 
@@ -428,6 +428,67 @@ p {
   gap: 12px;
   justify-content: center;
   margin-top: 6px;
+}
+
+.rsvp-guest-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 2px;
+}
+
+.rsvp-guest-choice-name {
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  color: var(--white);
+  text-align: left;
+}
+
+.rsvp-icon-group {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.rsvp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  padding: 0;
+  margin: 0;
+  background: var(--glass);
+  color: var(--ink-muted);
+  font-size: 0.6rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all .3s var(--ease-soft);
+}
+
+.rsvp-icon-btn.is-active {
+  background: var(--pink);
+  color: var(--blue);
+  border-color: var(--pink);
+}
+
+.rsvp-icon-btn.is-decline.is-active {
+  background: var(--ink-muted);
+  color: var(--white);
+  border-color: var(--ink-muted);
+}
+
+.rsvp-icon-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.rsvp-guest-choice .rsvp-actions button {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.65rem;
 }
 
 .rsvp-note {

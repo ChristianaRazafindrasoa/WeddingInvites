@@ -6,7 +6,7 @@ Guests look up their invitation by token, submit their RSVP,  upload photos to a
 
 ## ✨ Features
 
-- 🔍 **Wedding lookup** by personalized token
+- 🔍 **Wedding lookup** by phone number
 - 💌 **RSVP submission** with plus-one support
 - 💛 **Honeymoon fund** via Stripe embedded checkout
 - 🖼️ **Photo gallery** — guests upload photos via s3
@@ -190,19 +190,3 @@ The script:
 The server expects an `application.properties` file placed next to `app.jar` on the remote machine (copy from `application.properties.example`).
 
 ---
-
-## 📡 API Overview
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/info` | Wedding details (names, date, city) |
-| `GET` | `/api/rsvp?token=` | Look up RSVP by token |
-| `POST` | `/api/rsvp` | Submit RSVP response |
-| `POST` | `/api/honeymoon-fund` | Create Stripe checkout session |
-| `GET` | `/api/checkout-session/{id}` | Retrieve Stripe session amount |
-| `GET` | `/api/photo-gallery` | List approved photos (pre-signed S3 URLs) |
-| `POST` | `/api/photos/upload` | Get a pre-signed S3 PUT URL |
-| `POST` | `/api/photos/save` | Save uploaded photo (pending approval) |
-| `POST` | `/api/admin/login` | Admin login — returns JWT |
-| `GET` | `/api/admin/guests` | List all guests (JWT required) |
-| `GET` | `/api/admin/rsvps` | List all RSVPs (JWT required) |

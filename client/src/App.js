@@ -32,7 +32,8 @@ function Invitation() {
   const [guestbookError, setGuestbookError] = useState(null);
   const [submittingNote, setSubmittingNote] = useState(false);
   const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
-  const [rsvpAccepted, setRsvpAccepted] = useState(false);
+  const [mainGuestAccepted, setMainGuestAccepted] = useState(true);
+  const [plusOneAccepted, setPlusOneAccepted] = useState(true);
 
   useEffect(() => {
     fetch("/api/info")
@@ -60,7 +61,11 @@ function Invitation() {
       setPlusOne(data.plusOneName || "");
       setAllowPlusOne(data.hasPlusOne === true);
       setRsvpSubmitted(data.isSubmitted === true);
-      setRsvpAccepted(data.isAccepted === true);
+      setMainGuestAccepted(data.mainGuestAccepted !== false);
+      setPlusOneAccepted(data.plusOneAccepted !== false);
+      if (data.message) {
+        setResponse({ message: data.message });
+      }
       if (window.innerWidth <= 768) {
         window.scrollTo(0, 0);
       }
@@ -74,11 +79,9 @@ function Invitation() {
     }
   };
 
-  const submitRSVP = async (attending) => {
+  const submitRSVP = async () => {
     try {
-      const confirmed = window.confirm(
-        `Are you sure you want to ${attending ? "accept" : "decline"}? 1 submission allowed.`
-      );
+      const confirmed = window.confirm("Are you sure you want to submit your RSVP? 1 submission allowed.");
       if (!confirmed) {
         return;
       }
@@ -91,14 +94,16 @@ function Invitation() {
           token,
           mainGuestName: mainGuest,
           plusOneName: plusOne,
-          isAccepted: attending,
+          mainGuestAccepted,
+          plusOneAccepted,
         }),
       });
       const data = await response.json();
       if (response.ok && data.isSubmitted) {
         setRsvpSubmitted(true);
-        setRsvpAccepted(data.isAccepted === true);
-        setResponse({ message: attending ? (data.message || "Thanks for confirming!") : "Thank you for letting us know." });
+        setMainGuestAccepted(data.mainGuestAccepted === true);
+        setPlusOneAccepted(data.plusOneAccepted === true);
+        setResponse({ message: data.message || "Thanks for confirming!" });
         setShowMessage(true);
         return;
       }
@@ -331,7 +336,10 @@ function Invitation() {
       token={token}
       submitRSVP={submitRSVP}
       rsvpSubmitted={rsvpSubmitted}
-      rsvpAccepted={rsvpAccepted}
+      mainGuestAccepted={mainGuestAccepted}
+      setMainGuestAccepted={setMainGuestAccepted}
+      plusOneAccepted={plusOneAccepted}
+      setPlusOneAccepted={setPlusOneAccepted}
       showMessage={showMessage}
       setShowMessage={setShowMessage}
       response={response}

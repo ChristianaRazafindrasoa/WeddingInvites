@@ -27,7 +27,10 @@ export default function InvitationView({
   token,
   submitRSVP,
   rsvpSubmitted,
-  rsvpAccepted,
+  mainGuestAccepted,
+  setMainGuestAccepted,
+  plusOneAccepted,
+  setPlusOneAccepted,
   showMessage,
   setShowMessage,
   response,
@@ -65,7 +68,7 @@ export default function InvitationView({
     return (
       <>
         <div className="leaf-bg" />
-        <div className="notice-banner">Welcome to our website</div>
+        <div className="notice-banner">Welcome 🤍</div>
         <div className="page">
           <div className="container">
             <div className="hero-rsvp-row hero-rsvp-row--lookup">
@@ -89,6 +92,8 @@ export default function InvitationView({
               </div>
               <div className="hero-rsvp-divider" />
               <section className="section" id="rsvp">
+                <span className="section-kicker">Will you celebrate with us?</span>
+                <h2>RSVP</h2>
                 <div className="rsvp-form">
                   <div>
                     <div className="phone-input-group">
@@ -169,31 +174,62 @@ export default function InvitationView({
           <h2>RSVP</h2>
           <div className="rsvp-form">
             <div>
-              <input className="name"
-                placeholder="e.g. John Doe"
-                value={mainGuest}
-                onChange={(e) => setMainGuest(e.target.value)}
-                readOnly={!!token} />
-              {allowPlusOne && (
+              {!token && (
+                <input className="name"
+                  placeholder="e.g. John Doe"
+                  value={mainGuest}
+                  onChange={(e) => setMainGuest(e.target.value)} />
+              )}
+              {!token && allowPlusOne && (
                 <input className="name"
                   title="Plus one"
                   placeholder="e.g. Jane Doe (optional)"
                   value={plusOne}
-                  onChange={(e) => setPlusOne(e.target.value)}
-                  readOnly={!!token} />
+                  onChange={(e) => setPlusOne(e.target.value)} />
+              )}
+              <div className="rsvp-guest-choice">
+                <span className="rsvp-guest-choice-name">{mainGuest}</span>
+                <div className="rsvp-actions">
+                  <button
+                    className={mainGuestAccepted ? "" : "btn-outline"}
+                    onClick={() => setMainGuestAccepted(true)}
+                    disabled={rsvpSubmitted}>Accept</button>
+                  <button
+                    className={mainGuestAccepted ? "btn-outline" : ""}
+                    onClick={() => setMainGuestAccepted(false)}
+                    disabled={rsvpSubmitted}>Decline</button>
+                </div>
+              </div>
+              {allowPlusOne && plusOne && (
+                <div className="rsvp-guest-choice">
+                  <span className="rsvp-guest-choice-name">{plusOne}</span>
+                  <div className="rsvp-actions">
+                    <button
+                      className={plusOneAccepted ? "" : "btn-outline"}
+                      onClick={() => setPlusOneAccepted(true)}
+                      disabled={rsvpSubmitted}>Accept</button>
+                    <button
+                      className={plusOneAccepted ? "btn-outline" : ""}
+                      onClick={() => setPlusOneAccepted(false)}
+                      disabled={rsvpSubmitted}>Decline</button>
+                  </div>
+                </div>
               )}
               <div className="rsvp-actions">
-                <button onClick={() => submitRSVP(true)} disabled={rsvpSubmitted}>Accept</button>
-                <button className="btn-outline" onClick={() => submitRSVP(false)} disabled={rsvpSubmitted}>Decline</button>
+                <button onClick={submitRSVP} disabled={rsvpSubmitted}>Submit</button>
               </div>
               <p className="rsvp-note">
-                {rsvpSubmitted
-                  ? (rsvpAccepted ? "Accepted - see you there!" : "Declined - we'll miss you!")
-                  : "Kindly RSVP at your earliest convenience"}
+                {!rsvpSubmitted && "Kindly RSVP at your earliest convenience"}
+                {rsvpSubmitted && response?.message && response.message.split("\n").map((line, index) => (
+                  <span key={index}>
+                    {index > 0 && <br />}
+                    {line}
+                  </span>
+                ))}
               </p>
               {showMessage &&
                 <div className="banner">
-                  {response.message} <br></br>
+                  Thank you for letting us know! <br></br>
                   <p className="banner-signature">- {wedding.groomName} & {wedding.brideName} 🤍</p>
                   <button onClick={() => setShowMessage(false)}>Close</button>
                 </div>}

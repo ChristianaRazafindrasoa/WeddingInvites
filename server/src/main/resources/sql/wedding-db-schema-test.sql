@@ -39,7 +39,6 @@ CREATE TABLE rsvp (
     main_guest_id INT NOT NULL,
     plus_one_id INT,
     responded_at DATETIME,
-    is_accepted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (wedding_id)
         REFERENCES wedding_info(wedding_id),
 	FOREIGN KEY (main_guest_id)

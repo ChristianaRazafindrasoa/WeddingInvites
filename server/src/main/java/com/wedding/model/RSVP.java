@@ -30,17 +30,14 @@ public class RSVP {
     private Guest plusOne;
     @Column(name = "responded_at")
     private LocalDateTime respondedAt;
-    @Column(name = "is_accepted")
-    private boolean isAccepted;
 
     public RSVP() {}
 
-    public RSVP(String token, Guest mainGuest, Guest plusOne, LocalDateTime respondedAt, boolean isAccepted) {
+    public RSVP(String token, Guest mainGuest, Guest plusOne, LocalDateTime respondedAt) {
         this.token = token;
         this.mainGuest = mainGuest;
         this.plusOne = plusOne;
         this.respondedAt = respondedAt;
-        this.isAccepted = isAccepted;
     }
 
     public int getId() {
@@ -65,13 +62,5 @@ public class RSVP {
 
     public void setRespondedAt(LocalDateTime timestamp) {
         respondedAt = timestamp;
-    }
-
-    public boolean isAccepted() {
-        return isAccepted;
-    }
-
-    public void setAccepted(boolean isAccepted) {
-        this.isAccepted = isAccepted;
     }
 }
